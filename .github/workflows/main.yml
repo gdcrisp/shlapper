@@ -1,0 +1,2 @@
+- name: setup-beam
+  uses: erlef/setup-beam@v1.20.4
