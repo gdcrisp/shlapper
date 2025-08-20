@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Project Management Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    // Dark mode configuration
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          animation: {
+            'fade-in': 'fadeIn 0.3s ease-in-out',
+            'slide-up': 'slideUp 0.3s ease-out',
+            'bounce-gentle': 'bounceGentle 0.6s ease-in-out',
+            'scale-in': 'scaleIn 0.2s ease-out'
+          },
+          keyframes: {
+            fadeIn: {
+              '0%': { opacity: '0', transform: 'translateY(10px)' },
+              '100%': { opacity: '1', transform: 'translateY(0)' }
+            },
+            slideUp: {
+              '0%': { opacity: '0', transform: 'translateY(20px)' },
+              '100%': { opacity: '1', transform: 'translateY(0)' }
+            },
+            bounceGentle: {
+              '0%, 20%, 53%, 80%, 100%': { transform: 'translateY(0)' },
+              '40%, 43%': { transform: 'translateY(-8px)' },
+              '70%': { transform: 'translateY(-4px)' },
+              '90%': { transform: 'translateY(-2px)' }
+            },
+            scaleIn: {
+              '0%': { opacity: '0', transform: 'scale(0.9)' },
+              '100%': { opacity: '1', transform: 'scale(1)' }
+            }
+          },
+          colors: {
+            'dark-surface': '#1e293b',
+            'dark-card': '#334155',
+            'dark-border': '#475569'
+          }
+        }
+      }
+    }
+    
+    // Initialize theme from localStorage or default to light
+    function initTheme() {
+      const theme = localStorage.getItem('theme') || 'light';
+      document.documentElement.className = theme;
+      return theme;
+    }
+    
+    // Toggle theme function
+    function toggleTheme() {
+      const current = document.documentElement.className;
+      const newTheme = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.className = newTheme;
+      localStorage.setItem('theme', newTheme);
+      return newTheme;
+    }
+    
+    // Initialize theme immediately
+    initTheme();
+  </script>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+    
+    .drag-preview {
+      opacity: 0.8;
+      transform: rotate(5deg) scale(1.05);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+      z-index: 1000;
+    }
+    
+    .drag-target {
+      transform: translateY(5px);
+      box-shadow: 0 5px 15px rgba(59, 130, 246, 0.2);
+      border: 2px dashed #3b82f6;
+    }
+    
+    /* Dark mode drag effects */
+    .dark .drag-preview {
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    }
+    
+    .dark .drag-target {
+      box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
+      border-color: #60a5fa;
+    }
+    
+    /* API updating state for drag and drop */
+    .api-updating {
+      position: relative;
+      opacity: 0.7 !important;
+      filter: brightness(0.9) !important;
+    }
+    
+    .api-updating::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 16px;
+      height: 16px;
+      margin: -8px 0 0 -8px;
+      border: 2px solid #3b82f6;
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      background: rgba(255, 255, 255, 0.9);
+      z-index: 10;
+    }
+    
+    .dark .api-updating::after {
+      border-color: #60a5fa;
+      background: rgba(31, 41, 55, 0.9);
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    /* Theme toggle animation */
+    .theme-toggle {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .theme-toggle:hover {
+      transform: scale(1.1);
+    }
+  </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 dark:text-white transition-colors duration-300">
+  <!-- Theme Toggle Button -->
+  <div class="fixed top-4 right-4 z-50">
+    <button 
+      onclick="toggleTheme()" 
+      class="theme-toggle bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 p-3 rounded-full shadow-lg hover:shadow-xl border border-gray-200 dark:border-gray-700 transition-all duration-300 hover:scale-110"
+      title="Toggle dark mode"
+    >
+      <svg class="w-5 h-5 hidden dark:block" fill="currentColor" viewBox="0 0 20 20">
+        <!-- Sun icon (shown in dark mode) -->
+        <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"></path>
+      </svg>
+      <svg class="w-5 h-5 block dark:hidden" fill="currentColor" viewBox="0 0 20 20">
+        <!-- Moon icon (shown in light mode) -->
+        <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+      </svg>
+    </button>
+  </div>
+  
+  <div id="app"></div>
+  <script src="drag-drop.js"></script>
+  <script type="module">
+    import { main } from './build/dev/javascript/frontend/frontend.mjs';
+    main();
+  </script>
+</body>
+</html>

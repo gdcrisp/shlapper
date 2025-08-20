@@ -1,0 +1,311 @@
+warning: Unused imported module
+  ┌─ /Users/gdcrisp/Desktop/ducky/backend/test/api_simulation_test.gleam:6:1
+  │
+6 │ import gleam/time/calendar
+  │ ^^^^^^^^^^^^^^^^^^^^^^^^^^ This imported module is never used
+
+Hint: You can safely remove it.
+
+warning: Unused imported item
+  ┌─ /Users/gdcrisp/Desktop/ducky/backend/src/backend/router.gleam:4:35
+  │
+4 │ import gleam/http.{Options, Post, Put}
+  │                                   ^^^ This imported constructor is never used
+
+Hint: You can safely remove it.
+
+warning: Unused variable
+    ┌─ /Users/gdcrisp/Desktop/ducky/backend/test/backend_test.gleam:126:8
+    │
+126 │     Ok(conn) -> {
+    │        ^^^^ This variable is never used
+
+Hint: You can ignore it with an underscore: `_conn`.
+
+warning: Unused variable
+   ┌─ /Users/gdcrisp/Desktop/ducky/backend/test/database_test.gleam:17:8
+   │
+17 │     Ok(conn) -> {
+   │        ^^^^ This variable is never used
+
+Hint: You can ignore it with an underscore: `_conn`.
+
+warning: Unused imported module
+  ┌─ /Users/gdcrisp/Desktop/ducky/backend/test/debug_test.gleam:5:1
+  │
+5 │ import gleam/list
+  │ ^^^^^^^^^^^^^^^^^ This imported module is never used
+
+Hint: You can safely remove it.
+
+warning: Unused imported item
+  ┌─ /Users/gdcrisp/Desktop/ducky/backend/test/debug_test.gleam:6:28
+  │
+6 │ import gleam/option.{None, Some}
+  │                            ^^^^ This imported constructor is never used
+
+Hint: You can safely remove it.
+
+   Compiled in 0.10s
+    Running backend.main
+Starting Project Management API server on http://localhost:3000
+Listening on http://127.0.0.1:3000
+[1;34mINFO[0m 405 PUT /api/projects/114
+[1;34mINFO[0m 200 POST /api/projects/114
+[1;34mINFO[0m 201 POST /api/projects
+[1;34mINFO[0m 200 OPTIONS /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/116
+[1;34mINFO[0m 200 GET /api/projects
+[1;34mINFO[0m 200 OPTIONS /api/projects/114
+[1;34mINFO[0m 200 OPTIONS /api/projects/114
+[1;34mINFO[0m 200 OPTIONS /api/projects/114
+[1;34mINFO[0m 200 OPTIONS /api/projects/114
+[1;34mINFO[0m 200 OPTIONS /api/projects/114
+[1;34mINFO[0m 200 OPTIONS /api/projects/114
+[1;34mINFO[0m 200 OPTIONS /api/projects/114
+[1;34mINFO[0m 200 OPTIONS /api/projects/114
+[1;34mINFO[0m 200 OPTIONS /api/projects/114
+[1;34mINFO[0m 200 OPTIONS /api/projects/114
+[1;34mINFO[0m 200 OPTIONS /api/projects/114
+[1;34mINFO[0m 200 OPTIONS /api/projects/114
+[1;34mINFO[0m 200 OPTIONS /api/projects/114
+[1;34mINFO[0m 200 OPTIONS /api/projects/114
+[1;34mINFO[0m 200 OPTIONS /api/projects/114
+[1;34mINFO[0m 200 OPTIONS /api/projects/114
+[1;34mINFO[0m 200 OPTIONS /api/projects/114
+[1;34mINFO[0m 200 OPTIONS /api/projects/114
+[1;34mINFO[0m 200 OPTIONS /api/projects/114
+[1;34mINFO[0m 200 POST /api/projects/114
+[1;34mINFO[0m 200 POST /api/projects/114
+[1;34mINFO[0m 200 POST /api/projects/114
+[1;34mINFO[0m 200 POST /api/projects/114
+[1;34mINFO[0m 200 POST /api/projects/114
+[1;34mINFO[0m 200 POST /api/projects/114
+[1;34mINFO[0m 200 POST /api/projects/114
+[1;34mINFO[0m 200 POST /api/projects/114
+[1;34mINFO[0m 200 POST /api/projects/114
+[1;34mINFO[0m 200 POST /api/projects/114
+[1;34mINFO[0m 200 POST /api/projects/114
+[1;34mINFO[0m 200 POST /api/projects/114
+[1;34mINFO[0m 200 POST /api/projects/114
+[1;34mINFO[0m 200 POST /api/projects/114
+[1;34mINFO[0m 200 POST /api/projects/114
+[1;34mINFO[0m 200 POST /api/projects/114
+[1;34mINFO[0m 200 POST /api/projects/114
+[1;34mINFO[0m 200 POST /api/projects/114
+[1;34mINFO[0m 200 POST /api/projects/114
+[1;34mINFO[0m 200 POST /api/projects/114
+[1;34mINFO[0m 200 POST /api/projects/114
+[1;34mINFO[0m 200 POST /api/projects/114
+[1;34mINFO[0m 200 POST /api/projects/114
+[1;34mINFO[0m 200 POST /api/projects/114
+[1;34mINFO[0m 200 POST /api/projects/114
+[1;34mINFO[0m 200 POST /api/projects/114
+[1;34mINFO[0m 200 POST /api/projects/114
+[1;34mINFO[0m 200 POST /api/projects/114
+[1;34mINFO[0m 200 POST /api/projects/114
+[1;34mINFO[0m 200 POST /api/projects/114
+[1;34mINFO[0m 200 POST /api/projects/114
+[1;34mINFO[0m 200 POST /api/projects/114
+[1;34mINFO[0m 200 POST /api/projects/114
+[1;34mINFO[0m 200 POST /api/projects/114
+[1;34mINFO[0m 200 POST /api/projects/114
+[1;34mINFO[0m 200 POST /api/projects/114
+[1;34mINFO[0m 200 POST /api/projects/114
+[1;34mINFO[0m 200 POST /api/projects/114
+[1;34mINFO[0m 200 POST /api/projects/114
+[1;34mINFO[0m 200 POST /api/projects/114
+[1;34mINFO[0m 200 POST /api/projects/114
+[1;34mINFO[0m 200 POST /api/projects/114
+[1;34mINFO[0m 200 POST /api/projects/114
+[1;34mINFO[0m 200 POST /api/projects/114
+[1;34mINFO[0m 200 POST /api/projects/114
+[1;34mINFO[0m 200 POST /api/projects/114
+[1;34mINFO[0m 200 POST /api/projects/114
+[1;34mINFO[0m 200 POST /api/projects/114
+[1;34mINFO[0m 200 POST /api/projects/114
+[1;34mINFO[0m 200 POST /api/projects/114
+[1;34mINFO[0m 200 POST /api/projects/114
+[1;34mINFO[0m 200 POST /api/projects/114
+[1;34mINFO[0m 200 POST /api/projects/114
+[1;34mINFO[0m 200 POST /api/projects/114
+[1;34mINFO[0m 200 POST /api/projects/114
+[1;34mINFO[0m 200 POST /api/projects/114
+[1;34mINFO[0m 200 POST /api/projects/114
+[1;34mINFO[0m 200 POST /api/projects/114
+[1;34mINFO[0m 200 GET /api/projects
+[1;34mINFO[0m 200 OPTIONS /api/projects/113
+[1;34mINFO[0m 200 OPTIONS /api/projects/113
+[1;34mINFO[0m 200 OPTIONS /api/projects/113
+[1;34mINFO[0m 200 OPTIONS /api/projects/113
+[1;34mINFO[0m 200 OPTIONS /api/projects/113
+[1;34mINFO[0m 200 OPTIONS /api/projects/113
+[1;34mINFO[0m 200 OPTIONS /api/projects/113
+[1;34mINFO[0m 200 OPTIONS /api/projects/113
+[1;34mINFO[0m 200 OPTIONS /api/projects/113
+[1;34mINFO[0m 200 OPTIONS /api/projects/113
+[1;34mINFO[0m 200 OPTIONS /api/projects/113
+[1;34mINFO[0m 200 OPTIONS /api/projects/113
+[1;34mINFO[0m 200 OPTIONS /api/projects/113
+[1;34mINFO[0m 200 OPTIONS /api/projects/113
+[1;34mINFO[0m 200 OPTIONS /api/projects/113
+[1;34mINFO[0m 200 OPTIONS /api/projects/113
+[1;34mINFO[0m 200 OPTIONS /api/projects/113
+[1;34mINFO[0m 200 OPTIONS /api/projects/113
+[1;34mINFO[0m 200 OPTIONS /api/projects/113
+[1;34mINFO[0m 200 OPTIONS /api/projects/113
+[1;34mINFO[0m 200 OPTIONS /api/projects/113
+[1;34mINFO[0m 200 OPTIONS /api/projects/113
+[1;34mINFO[0m 200 OPTIONS /api/projects/113
+[1;34mINFO[0m 200 OPTIONS /api/projects/113
+[1;34mINFO[0m 200 OPTIONS /api/projects/113
+[1;34mINFO[0m 200 OPTIONS /api/projects/113
+[1;34mINFO[0m 200 OPTIONS /api/projects/113
+[1;34mINFO[0m 200 OPTIONS /api/projects/113
+[1;34mINFO[0m 200 OPTIONS /api/projects/113
+[1;34mINFO[0m 200 OPTIONS /api/projects/113
+[1;34mINFO[0m 200 OPTIONS /api/projects/113
+[1;34mINFO[0m 200 OPTIONS /api/projects/113
+[1;34mINFO[0m 200 OPTIONS /api/projects/113
+[1;34mINFO[0m 200 OPTIONS /api/projects/113
+[1;34mINFO[0m 200 OPTIONS /api/projects/113
+[1;34mINFO[0m 200 OPTIONS /api/projects/113
+[1;34mINFO[0m 200 OPTIONS /api/projects/113
+[1;34mINFO[0m 200 OPTIONS /api/projects/113
+[1;34mINFO[0m 200 OPTIONS /api/projects/113
+[1;34mINFO[0m 200 OPTIONS /api/projects/113
+[1;34mINFO[0m 200 OPTIONS /api/projects/113
+[1;34mINFO[0m 200 OPTIONS /api/projects/113
+[1;34mINFO[0m 200 OPTIONS /api/projects/113
+[1;34mINFO[0m 200 OPTIONS /api/projects/113
+[1;34mINFO[0m 200 OPTIONS /api/projects/113
+[1;34mINFO[0m 200 OPTIONS /api/projects/113
+[1;34mINFO[0m 200 OPTIONS /api/projects/113
+[1;34mINFO[0m 200 OPTIONS /api/projects/113
+[1;34mINFO[0m 200 OPTIONS /api/projects/113
+[1;34mINFO[0m 200 OPTIONS /api/projects/113
+[1;34mINFO[0m 200 OPTIONS /api/projects/113
+[1;34mINFO[0m 200 OPTIONS /api/projects/113
+[1;34mINFO[0m 200 OPTIONS /api/projects/113
+[1;34mINFO[0m 200 OPTIONS /api/projects/113
+[1;34mINFO[0m 200 OPTIONS /api/projects/113
+[1;34mINFO[0m 200 OPTIONS /api/projects/113
+[1;34mINFO[0m 200 OPTIONS /api/projects/113
+[1;34mINFO[0m 200 OPTIONS /api/projects/113
+[1;34mINFO[0m 200 OPTIONS /api/projects/113
+[1;34mINFO[0m 200 OPTIONS /api/projects/113
+[1;34mINFO[0m 200 OPTIONS /api/projects/113
+[1;34mINFO[0m 200 OPTIONS /api/projects/113
+[1;34mINFO[0m 200 OPTIONS /api/projects/113
+[1;34mINFO[0m 200 OPTIONS /api/projects/113
+[1;34mINFO[0m 200 OPTIONS /api/projects/113
+[1;34mINFO[0m 200 OPTIONS /api/projects/113
+[1;34mINFO[0m 200 OPTIONS /api/projects/113
+[1;34mINFO[0m 200 OPTIONS /api/projects/113
+[1;34mINFO[0m 200 OPTIONS /api/projects/113
+[1;34mINFO[0m 200 OPTIONS /api/projects/113
+[1;34mINFO[0m 200 OPTIONS /api/projects/113
+[1;34mINFO[0m 200 OPTIONS /api/projects/113
+[1;34mINFO[0m 200 OPTIONS /api/projects/113
+[1;34mINFO[0m 200 OPTIONS /api/projects/113
+[1;34mINFO[0m 200 OPTIONS /api/projects/113
+[1;34mINFO[0m 200 OPTIONS /api/projects/113
+[1;34mINFO[0m 200 OPTIONS /api/projects/113
+[1;34mINFO[0m 200 OPTIONS /api/projects/113
+[1;34mINFO[0m 200 OPTIONS /api/projects/113
+[1;34mINFO[0m 200 OPTIONS /api/projects/113
+[1;34mINFO[0m 200 OPTIONS /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 POST /api/projects/113
+[1;34mINFO[0m 200 GET /api/projects
+[1;34mINFO[0m 200 GET /api/projects
+[1;34mINFO[0m 200 GET /api/team
+[1;34mINFO[0m 200 GET /api/tasks
+[1;32mNTCE[0m args=[] label=ErrorLogger(InfoMsg) format=charlist.from_string("SIGTERM received - shutting down~n")

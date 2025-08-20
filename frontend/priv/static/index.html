@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Project Management Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    }
+    
+    /* Custom slider styling - Light mode */
+    .slider::-webkit-slider-thumb {
+      appearance: none;
+      height: 20px;
+      width: 20px;
+      border-radius: 50%;
+      background: #06B6D4; /* aqua-500 */
+      cursor: pointer;
+      border: 2px solid white;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+      transition: all 0.2s;
+    }
+    
+    .slider::-webkit-slider-thumb:hover {
+      background: #0891B2; /* aqua-600 */
+      transform: scale(1.1);
+      box-shadow: 0 4px 12px rgba(6, 182, 212, 0.4);
+    }
+    
+    .slider::-moz-range-thumb {
+      height: 20px;
+      width: 20px;
+      border-radius: 50%;
+      background: #06B6D4; /* aqua-500 */
+      cursor: pointer;
+      border: 2px solid white;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+      transition: all 0.2s;
+    }
+    
+    .slider::-moz-range-thumb:hover {
+      background: #0891B2; /* aqua-600 */
+      transform: scale(1.1);
+      box-shadow: 0 4px 12px rgba(6, 182, 212, 0.4);
+    }
+    
+    .slider:focus {
+      outline: none;
+      ring: 2px;
+      ring-color: #06B6D4; /* aqua-500 */
+    }
+    
+    /* Dark mode slider styling */
+    .dark .slider::-webkit-slider-thumb {
+      background: #67E8F9; /* aqua-300 */
+      border: 2px solid #1F2937; /* gray-800 */
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+    }
+    
+    .dark .slider::-webkit-slider-thumb:hover {
+      background: #22D3EE; /* aqua-400 */
+      box-shadow: 0 4px 12px rgba(103, 232, 249, 0.4);
+    }
+    
+    .dark .slider::-moz-range-thumb {
+      background: #67E8F9; /* aqua-300 */
+      border: 2px solid #1F2937; /* gray-800 */
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+    }
+    
+    .dark .slider::-moz-range-thumb:hover {
+      background: #22D3EE; /* aqua-400 */
+      box-shadow: 0 4px 12px rgba(103, 232, 249, 0.4);
+    }
+    
+    .dark .slider:focus {
+      ring-color: #67E8F9; /* aqua-300 */
+    }
+    
+    /* Navigation button styling - Light mode */
+    .nav-button {
+      transition: all 0.2s ease-in-out;
+    }
+    
+    .nav-button:hover {
+      background-color: #E0F7FA; /* light aqua background */
+      color: #0891B2; /* aqua-600 */
+      transform: translateY(-1px);
+    }
+    
+    .nav-button.active {
+      background-color: #06B6D4; /* aqua-500 */
+      color: white;
+    }
+    
+    .nav-button.active:hover {
+      background-color: #0891B2; /* aqua-600 */
+    }
+    
+    /* Dark mode navigation button styling */
+    .dark .nav-button {
+      color: #D1D5DB; /* gray-300 */
+    }
+    
+    .dark .nav-button:hover {
+      background-color: #1E3A3F; /* dark aqua background */
+      color: #67E8F9; /* aqua-300 */
+    }
+    
+    .dark .nav-button.active {
+      background-color: #67E8F9; /* aqua-300 */
+      color: #1F2937; /* gray-800 */
+    }
+    
+    .dark .nav-button.active:hover {
+      background-color: #22D3EE; /* aqua-400 */
+    }
+    
+    /* API updating state for drag and drop */
+    .api-updating {
+      transition: all 0.3s ease;
+    }
+    
+    /* Task card hover interaction improvements */
+    .task-card {
+      transition: all 0.2s ease;
+    }
+    
+    .task-card.drag-disabled {
+      cursor: default !important;
+      transform: none !important;
+      user-select: none;
+    }
+    
+    .task-card.drag-disabled:hover {
+      transform: none !important;
+      box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1) !important;
+    }
+    
+    .task-card:hover .hours-slider-container {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    
+    .hours-slider-container {
+      opacity: 0.7;
+      transform: translateY(-2px);
+      transition: all 0.2s ease;
+    }
+    
+    .hours-slider-container:hover {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    
+    .slider-area {
+      position: relative;
+      z-index: 10;
+      padding: 8px;
+      margin: -8px;
+    }
+    
+    .slider-area:hover {
+      background: rgba(6, 182, 212, 0.05);
+      border-radius: 8px;
+    }
+    
+    .dark .slider-area:hover {
+      background: rgba(103, 232, 249, 0.1);
+    }
+    
+    /* Enhanced slider interaction */
+    .slider:focus {
+      outline: none;
+      ring: 2px;
+      ring-color: #06B6D4; /* aqua-500 */
+    }
+    
+    .dark .slider:focus {
+      ring-color: #67E8F9; /* aqua-300 */
+    }
+    
+    /* Prevent text selection during slider interaction */
+    .slider-active * {
+      user-select: none !important;
+      pointer-events: none !important;
+    }
+    
+    .slider-active .slider-area,
+    .slider-active .slider-area * {
+      pointer-events: auto !important;
+    }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script type="module">
+    import { main } from './frontend.mjs';
+    main();
+    
+    // Handle slider interactions to disable card dragging
+    document.addEventListener('DOMContentLoaded', function() {
+      // Function to add/remove drag-disabled class
+      function toggleCardDrag(slider, disable) {
+        const taskCard = slider.closest('.task-card');
+        if (taskCard) {
+          if (disable) {
+            taskCard.classList.add('drag-disabled', 'slider-active');
+            taskCard.draggable = false;
+          } else {
+            taskCard.classList.remove('drag-disabled', 'slider-active');
+            taskCard.draggable = true;
+          }
+        }
+      }
+      
+      // Add event listeners to all sliders (existing and future)
+      function addSliderListeners() {
+        document.querySelectorAll('.slider').forEach(slider => {
+          // Remove existing listeners to prevent duplicates
+          slider.removeEventListener('mousedown', slider._mousedownHandler);
+          slider.removeEventListener('mouseup', slider._mouseupHandler);
+          slider.removeEventListener('focus', slider._focusHandler);
+          slider.removeEventListener('blur', slider._blurHandler);
+          
+          // Mouse events
+          slider._mousedownHandler = () => toggleCardDrag(slider, true);
+          slider._mouseupHandler = () => toggleCardDrag(slider, false);
+          
+          // Focus events
+          slider._focusHandler = () => toggleCardDrag(slider, true);
+          slider._blurHandler = () => toggleCardDrag(slider, false);
+          
+          slider.addEventListener('mousedown', slider._mousedownHandler);
+          slider.addEventListener('mouseup', slider._mouseupHandler);
+          slider.addEventListener('focus', slider._focusHandler);
+          slider.addEventListener('blur', slider._blurHandler);
+        });
+      }
+      
+      // Initial setup
+      addSliderListeners();
+      
+      // Re-run when DOM changes (for dynamically added sliders)
+      const observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+          if (mutation.type === 'childList') {
+            addSliderListeners();
+          }
+        });
+      });
+      
+      observer.observe(document.body, {
+        childList: true,
+        subtree: true
+      });
+      
+      // Global mouseup to ensure cards are re-enabled
+      document.addEventListener('mouseup', function() {
+        document.querySelectorAll('.task-card.drag-disabled').forEach(card => {
+          // Only re-enable if no slider is focused
+          const focusedSlider = card.querySelector('.slider:focus');
+          if (!focusedSlider) {
+            card.classList.remove('drag-disabled', 'slider-active');
+            card.draggable = true;
+          }
+        });
+      });
+    });
+  </script>
+</body>
+</html>
