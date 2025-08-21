@@ -1,4 +1,7 @@
 # Project Management System - Gleam Full Stack Example
+<img width="1332" height="577" alt="Screenshot 2025-08-21 at 11 30 45 AM" src="https://github.com/user-attachments/assets/1ffcd867-fa8d-4534-8242-baff2e78ae05" />
+<img width="882" height="684" alt="Screenshot 2025-08-21 at 11 32 12 AM" src="https://github.com/user-attachments/assets/fcc9cb8e-1ed1-488b-84f6-d372f7b93bd8" />
+<img width="737" height="698" alt="Screenshot 2025-08-21 at 11 33 55 AM" src="https://github.com/user-attachments/assets/7f7f7350-13e4-40a8-aee7-0def83a645c4" />
 
 ## Project Structure
 
