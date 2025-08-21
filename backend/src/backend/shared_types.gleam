@@ -4,7 +4,7 @@ import gleam/time/calendar.{type Date}
 // Enums for type safety
 pub type ProjectStatus {
   ProjectPlanning
-  ProjectInProgress  
+  ProjectInProgress
   ProjectOnHold
   ProjectCompleted
   ProjectCancelled
@@ -27,13 +27,22 @@ pub type TaskPriority {
 
 pub type ProjectColor {
   ProjectBlue
+  ProjectLightBlue
+  ProjectSky
+  ProjectDeepPurple
+  ProjectIndigo
   ProjectGreen
+  ProjectLime
+  ProjectLightGreen
   ProjectRed
   ProjectYellow
   ProjectPurple
+  ProjectAmber
+  ProjectDeepOrange
   ProjectOrange
   ProjectPink
   ProjectTeal
+  ProjectCyan
 }
 
 // Core domain types
@@ -83,9 +92,12 @@ pub type CreateProjectRequest {
   CreateProjectRequest(
     name: String,
     description: String,
-    deadline: String,  // Will be parsed to Date
-    status: String,    // Will be converted to ProjectStatus
-    color: String,     // Will be converted to ProjectColor
+    deadline: String,
+    // Will be parsed to Date
+    status: String,
+    // Will be converted to ProjectStatus
+    color: String,
+    // Will be converted to ProjectColor
   )
 }
 
@@ -93,9 +105,12 @@ pub type UpdateProjectRequest {
   UpdateProjectRequest(
     name: String,
     description: String,
-    deadline: String,  // Will be parsed to Date
-    status: String,    // Will be converted to ProjectStatus
-    color: String,     // Will be converted to ProjectColor
+    deadline: String,
+    // Will be parsed to Date
+    status: String,
+    // Will be converted to ProjectStatus
+    color: String,
+    // Will be converted to ProjectColor
   )
 }
 
@@ -105,9 +120,12 @@ pub type CreateTaskRequest {
     title: String,
     description: String,
     assigned_to: Option(Int),
-    status: String,     // Will be converted to TaskStatus
-    priority: String,   // Will be converted to TaskPriority
-    due_date: Option(String),  // Will be parsed to Date
+    status: String,
+    // Will be converted to TaskStatus
+    priority: String,
+    // Will be converted to TaskPriority
+    due_date: Option(String),
+    // Will be parsed to Date
     hours_logged: Float,
   )
 }
@@ -118,9 +136,12 @@ pub type UpdateTaskRequest {
     title: String,
     description: String,
     assigned_to: Option(Int),
-    status: String,     // Will be converted to TaskStatus
-    priority: String,   // Will be converted to TaskPriority
-    due_date: Option(String),  // Will be parsed to Date
+    status: String,
+    // Will be converted to TaskStatus
+    priority: String,
+    // Will be converted to TaskPriority
+    due_date: Option(String),
+    // Will be parsed to Date
     hours_logged: Float,
   )
 }
@@ -187,20 +208,6 @@ pub fn task_priority_to_string(priority: TaskPriority) -> String {
   }
 }
 
-pub fn project_color_from_string(str: String) -> Result(ProjectColor, String) {
-  case str {
-    "blue" -> Ok(ProjectBlue)
-    "green" -> Ok(ProjectGreen)
-    "red" -> Ok(ProjectRed)
-    "yellow" -> Ok(ProjectYellow)
-    "purple" -> Ok(ProjectPurple)
-    "orange" -> Ok(ProjectOrange)
-    "pink" -> Ok(ProjectPink)
-    "teal" -> Ok(ProjectTeal)
-    _ -> Error("Invalid project color: " <> str)
-  }
-}
-
 pub fn project_color_to_string(color: ProjectColor) -> String {
   case color {
     ProjectBlue -> "blue"
@@ -211,5 +218,37 @@ pub fn project_color_to_string(color: ProjectColor) -> String {
     ProjectOrange -> "orange"
     ProjectPink -> "pink"
     ProjectTeal -> "teal"
+    ProjectLightBlue -> "light-blue"
+    ProjectDeepPurple -> "deep-purple"
+    ProjectIndigo -> "indigo"
+    ProjectSky -> "sky"
+    ProjectLime -> "lime"
+    ProjectLightGreen -> "light-green"
+    ProjectAmber -> "amber"
+    ProjectDeepOrange -> "deep-orange"
+    ProjectCyan -> "cyan"
+  }
+}
+
+pub fn project_color_from_string(str: String) -> Result(ProjectColor, String) {
+  case str {
+    "blue" -> Ok(ProjectBlue)
+    "green" -> Ok(ProjectGreen)
+    "red" -> Ok(ProjectRed)
+    "yellow" -> Ok(ProjectYellow)
+    "purple" -> Ok(ProjectPurple)
+    "orange" -> Ok(ProjectOrange)
+    "pink" -> Ok(ProjectPink)
+    "teal" -> Ok(ProjectTeal)
+    "light-blue" -> Ok(ProjectLightBlue)
+    "deep-purple" -> Ok(ProjectDeepPurple)
+    "indigo" -> Ok(ProjectIndigo)
+    "sky" -> Ok(ProjectSky)
+    "lime" -> Ok(ProjectLime)
+    "light-green" -> Ok(ProjectLightGreen)
+    "amber" -> Ok(ProjectAmber)
+    "deep-orange" -> Ok(ProjectDeepOrange)
+    "cyan" -> Ok(ProjectCyan)
+    _ -> Error("Invalid project color: " <> str)
   }
 }
