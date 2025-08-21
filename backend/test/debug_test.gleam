@@ -1,8 +1,7 @@
 import backend/db
 import backend/sql
 import gleam/io
-import gleam/list
-import gleam/option.{None, Some}
+import gleam/option.{None}
 import gleam/string
 import gleam/time/calendar
 import gleeunit

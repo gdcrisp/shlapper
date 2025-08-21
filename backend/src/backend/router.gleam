@@ -1,7 +1,7 @@
 import backend/api
 import backend/db
 import backend/web
-import gleam/http.{Options, Post, Put}
+import gleam/http.{Options, Post}
 import gleam/int
 import gleam/io
 import wisp.{type Request, type Response}

@@ -482,42 +482,45 @@ fn extract_json_int_field(
   body: String,
   field_name: String,
 ) -> Result(Int, String) {
-  // Try with space: "field": 123
-  case string.split(body, "\"" <> field_name <> "\": ") {
-    [_before, after] ->
-      case string.split(after, ",") {
-        [value_str, ..] -> {
-          case string.split(value_str, "}") {
-            [clean_value, ..] ->
-              case int.parse(clean_value) {
-                Ok(value) -> Ok(value)
-                Error(_) -> Error("Invalid integer for " <> field_name)
-              }
-            [] -> Error("Empty value for " <> field_name)
-          }
-        }
-        [] -> Error("No value found for " <> field_name)
+  let with_space = "\"" <> field_name <> "\": "
+  let without_space = "\"" <> field_name <> "\":"
+
+  case string.split(body, with_space) {
+    [_before, after] -> parse_int_value(after, field_name)
+    _ ->
+      case string.split(body, without_space) {
+        [_before, after] -> parse_int_value(after, field_name)
+        _ -> Error("Field " <> field_name <> " not found in JSON")
       }
-    _ -> {
-      // Try without space: "field":123
-      case string.split(body, "\"" <> field_name <> "\":") {
-        [_before, after] ->
-          case string.split(after, ",") {
-            [value_str, ..] -> {
-              case string.split(value_str, "}") {
-                [clean_value, ..] ->
-                  case int.parse(clean_value) {
-                    Ok(value) -> Ok(value)
-                    Error(_) -> Error("Invalid integer for " <> field_name)
-                  }
-                [] -> Error("Empty value for " <> field_name)
-              }
-            }
-            [] -> Error("No value found for " <> field_name)
-          }
-        _ -> Error("Field " <> field_name <> " not found")
-      }
-    }
+  }
+}
+
+fn parse_int_value(
+  after_field: String,
+  field_name: String,
+) -> Result(Int, String) {
+  // Find the end of the value (comma, closing brace, or end of string)
+  let parts_by_comma = string.split(after_field, ",")
+  let first_part = case parts_by_comma {
+    [first, ..] -> first
+    [] -> after_field
+  }
+
+  let parts_by_brace = string.split(first_part, "}")
+  let cleaned = case parts_by_brace {
+    [value, ..] -> string.trim(value)
+    [] -> string.trim(first_part)
+  }
+
+  case int.parse(cleaned) {
+    Ok(value) -> Ok(value)
+    Error(_) ->
+      Error(
+        "Cannot parse integer value '"
+        <> cleaned
+        <> "' for field "
+        <> field_name,
+      )
   }
 }
 
