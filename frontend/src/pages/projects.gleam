@@ -5,6 +5,7 @@ import lustre/attribute
 import lustre/element.{type Element}
 import lustre/element/html
 import lustre/event
+import shared_types
 import types.{type CacheInfo, type FormState, type Project, type ProjectForm}
 
 pub fn view_projects(
@@ -95,18 +96,18 @@ fn view_projects_kanban(
   on_update_project_status: fn(Int, String) -> msg,
 ) -> Element(msg) {
   let planning_projects =
-    list.filter(projects, fn(p) { p.status == "planning" })
+    list.filter(projects, fn(p) { p.status == shared_types.ProjectPlanning })
   let active_projects =
     list.filter(projects, fn(p) {
-      p.status == "active" || p.status == "in_progress"
+      p.status == shared_types.ProjectInProgress
     })
   let completed_projects =
     list.filter(projects, fn(p) {
-      p.status == "completed" || p.status == "done"
+      p.status == shared_types.ProjectCompleted
     })
   let on_hold_projects =
     list.filter(projects, fn(p) {
-      p.status == "on_hold" || p.status == "review"
+      p.status == shared_types.ProjectOnHold
     })
 
   html.div(
@@ -322,34 +323,34 @@ fn view_project_form(
                     event.on_input(on_update_status),
                   ],
                   [
-                    html.option(
-                      [
-                        attribute.value("planning"),
-                        attribute.selected(form.status == "planning"),
-                      ],
-                      "Planning",
-                    ),
-                    html.option(
-                      [
-                        attribute.value("active"),
-                        attribute.selected(form.status == "active"),
-                      ],
-                      "Active",
-                    ),
-                    html.option(
-                      [
-                        attribute.value("on_hold"),
-                        attribute.selected(form.status == "on_hold"),
-                      ],
-                      "On Hold",
-                    ),
-                    html.option(
-                      [
-                        attribute.value("completed"),
-                        attribute.selected(form.status == "completed"),
-                      ],
-                      "Completed",
-                    ),
+                     html.option(
+                       [
+                         attribute.value("planning"),
+                         attribute.selected(form.status == shared_types.ProjectPlanning),
+                       ],
+                       "Planning",
+                     ),
+                     html.option(
+                       [
+                         attribute.value("active"),
+                         attribute.selected(form.status == shared_types.ProjectInProgress),
+                       ],
+                       "Active",
+                     ),
+                     html.option(
+                       [
+                         attribute.value("on_hold"),
+                         attribute.selected(form.status == shared_types.ProjectOnHold),
+                       ],
+                       "On Hold",
+                     ),
+                     html.option(
+                       [
+                         attribute.value("completed"),
+                         attribute.selected(form.status == shared_types.ProjectCompleted),
+                       ],
+                       "Completed",
+                     ),
                   ],
                 ),
               ]),
@@ -365,7 +366,7 @@ fn view_project_form(
                 html.div(
                   [attribute.class("grid grid-cols-8 gap-2")],
                   list.map(colors.get_material_colors(), fn(color) {
-                    let is_selected = color.name == form.color
+                     let is_selected = color.name == shared_types.project_color_to_string(form.color)
                     let border_class = case is_selected {
                       True ->
                         "ring-2 ring-gray-900 dark:ring-white ring-offset-2"
@@ -450,7 +451,7 @@ fn project_card(
   on_edit_project: fn(Int) -> msg,
   _on_update_project_status: fn(Int, String) -> msg,
 ) -> Element(msg) {
-  let color_classes = colors.get_project_color_classes(project.color)
+  let color_classes = colors.get_project_color_classes(shared_types.project_color_to_string(project.color))
 
   html.div(
     [
@@ -462,7 +463,7 @@ fn project_card(
       attribute.attribute("style", "user-select: none;"),
       attribute.attribute("data-id", int.to_string(project.id)),
       attribute.attribute("data-type", "project"),
-      attribute.attribute("data-status", project.status),
+      attribute.attribute("data-status", shared_types.project_status_to_string(project.status)),
       attribute.title("Click to edit project"),
       event.on_click(on_edit_project(project.id)),
     ],
@@ -494,7 +495,7 @@ fn project_card(
                   "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-white bg-opacity-20 backdrop-blur-sm",
                 ),
               ],
-              [html.text(project.status)],
+               [html.text(shared_types.project_status_to_string(project.status))],
             ),
             html.span(
               [

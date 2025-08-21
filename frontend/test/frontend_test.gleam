@@ -3,7 +3,11 @@ import gleam/option
 import gleam/string
 import gleeunit
 import gleeunit/should
-import types.{ProjectForm, TaskForm}
+import shared_types.{
+  ProjectForm, TaskForm, ProjectPlanning, ProjectBlue, TaskPending, TaskMedium, 
+  TaskInProgress, TaskHigh, ProjectInProgress, ProjectGreen,
+  project_status_to_string, project_color_to_string, task_status_to_string, task_priority_to_string
+}
 
 pub fn main() -> Nil {
   gleeunit.main()
@@ -15,14 +19,14 @@ pub fn project_form_creation_test() {
       "Test Project",
       "Test Description",
       "2024-12-31",
-      "planning",
-      "blue",
+      ProjectPlanning,
+      ProjectBlue,
     )
   form.name
   |> should.equal("Test Project")
 
   form.status
-  |> should.equal("planning")
+  |> should.equal(ProjectPlanning)
 }
 
 pub fn task_form_creation_test() {
@@ -31,8 +35,8 @@ pub fn task_form_creation_test() {
       1,
       "Test Task",
       "Test Description",
-      "pending",
-      "medium",
+      TaskPending,
+      TaskMedium,
       option.None,
       option.None,
       0.0,
@@ -44,7 +48,7 @@ pub fn task_form_creation_test() {
   |> should.equal(1)
 
   form.priority
-  |> should.equal("medium")
+  |> should.equal(TaskMedium)
 }
 
 pub fn task_form_with_assignment_test() {
@@ -53,8 +57,8 @@ pub fn task_form_with_assignment_test() {
       2,
       "Assigned Task",
       "Description",
-      "in_progress",
-      "high",
+      TaskInProgress,
+      TaskHigh,
       option.Some(10),
       option.Some("2024-03-15"),
       5.5,
@@ -67,7 +71,7 @@ pub fn task_form_with_assignment_test() {
   |> should.equal(option.Some("2024-03-15"))
 
   form.priority
-  |> should.equal("high")
+  |> should.equal(TaskHigh)
 }
 
 pub fn project_form_json_serialization_test() {
@@ -77,8 +81,8 @@ pub fn project_form_json_serialization_test() {
       "API Test Project",
       "Testing JSON creation",
       "2024-06-01",
-      "active",
-      "green",
+      ProjectInProgress,
+      ProjectGreen,
     )
 
   let expected_json =
@@ -86,8 +90,8 @@ pub fn project_form_json_serialization_test() {
       #("name", json.string(form.name)),
       #("description", json.string(form.description)),
       #("deadline", json.string(form.deadline)),
-      #("status", json.string(form.status)),
-      #("color", json.string(form.color)),
+      #("status", json.string(project_status_to_string(form.status))),
+      #("color", json.string(project_color_to_string(form.color))),
     ])
 
   let json_string = json.to_string(expected_json)
@@ -110,8 +114,8 @@ pub fn task_form_json_serialization_test() {
       71,
       "JSON Test Task",
       "Testing JSON",
-      "pending",
-      "medium",
+      TaskPending,
+      TaskMedium,
       option.Some(10),
       option.Some("2024-03-20"),
       2.0,
@@ -122,8 +126,8 @@ pub fn task_form_json_serialization_test() {
       #("project_id", json.int(form.project_id)),
       #("title", json.string(form.title)),
       #("description", json.string(form.description)),
-      #("status", json.string(form.status)),
-      #("priority", json.string(form.priority)),
+      #("status", json.string(task_status_to_string(form.status))),
+      #("priority", json.string(task_priority_to_string(form.priority))),
       #("assigned_to", case form.assigned_to {
         option.Some(id) -> json.int(id)
         option.None -> json.null()

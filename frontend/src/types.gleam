@@ -1,46 +1,17 @@
 import gleam/option.{type Option}
+import shared_types
 
-pub type DashboardStats {
-  DashboardStats(
-    total_projects: Int,
-    active_projects: Int,
-    completed_tasks: Int,
-    pending_tasks: Int,
-    team_members: Int,
-    total_hours: Float,
-  )
-}
+// Re-export the main types from shared_types
+pub type DashboardStats = shared_types.DashboardStats
+pub type Project = shared_types.Project
+pub type Task = shared_types.Task
+pub type TeamMember = shared_types.TeamMember
+pub type ProjectStatus = shared_types.ProjectStatus
+pub type TaskStatus = shared_types.TaskStatus
+pub type TaskPriority = shared_types.TaskPriority
+pub type ProjectColor = shared_types.ProjectColor
 
-pub type Project {
-  Project(
-    id: Int,
-    name: String,
-    description: String,
-    deadline: String,
-    status: String,
-    color: String,
-    created_at: String,
-  )
-}
-
-pub type Task {
-  Task(
-    id: Int,
-    project_id: Int,
-    title: String,
-    description: String,
-    assigned_to: Option(Int),
-    status: String,
-    priority: String,
-    due_date: Option(String),
-    hours_logged: Float,
-  )
-}
-
-pub type TeamMember {
-  TeamMember(id: Int, name: String, email: String, role: String)
-}
-
+// Frontend-specific types
 pub type CacheInfo {
   CacheInfo(is_loading: Bool, last_fetched: Int, is_valid: Bool)
 }
@@ -66,8 +37,8 @@ pub type ProjectForm {
     name: String,
     description: String,
     deadline: String,
-    status: String,
-    color: String,
+    status: ProjectStatus,
+    color: ProjectColor,
   )
 }
 
@@ -76,8 +47,8 @@ pub type TaskForm {
     project_id: Int,
     title: String,
     description: String,
-    status: String,
-    priority: String,
+    status: TaskStatus,
+    priority: TaskPriority,
     assigned_to: Option(Int),
     due_date: Option(String),
     hours_logged: Float,

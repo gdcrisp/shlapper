@@ -8,6 +8,7 @@ import lustre/attribute
 import lustre/element.{type Element}
 import lustre/element/html
 import lustre/event
+import shared_types
 import types.{
   type CacheInfo, type FormState, type Project, type Task, type TaskForm,
   type TeamMember,
@@ -149,17 +150,17 @@ fn view_tasks_kanban(
 ) -> Element(msg) {
   let todo_tasks =
     list.filter(tasks, fn(t) {
-      t.status == "pending" || t.status == "todo" || t.status == "open"
+      t.status == shared_types.TaskPending
     })
   let in_progress_tasks =
     list.filter(tasks, fn(t) {
-      t.status == "in_progress" || t.status == "active"
+      t.status == shared_types.TaskInProgress
     })
   let review_tasks =
-    list.filter(tasks, fn(t) { t.status == "testing" || t.status == "review" })
+    list.filter(tasks, fn(t) { t.status == shared_types.TaskInReview })
   let done_tasks =
     list.filter(tasks, fn(t) {
-      t.status == "completed" || t.status == "done" || t.status == "closed"
+      t.status == shared_types.TaskCompleted
     })
 
   html.div(
@@ -187,7 +188,7 @@ fn view_tasks_kanban(
       ),
       task_kanban_column(
         "Review",
-        "testing",
+        "review",
         review_tasks,
         "bg-yellow-100 dark:bg-yellow-900",
         projects,
@@ -407,28 +408,28 @@ fn view_task_form(
                       html.option(
                         [
                           attribute.value("pending"),
-                          attribute.selected(form.status == "pending"),
+                          attribute.selected(form.status == shared_types.TaskPending),
                         ],
                         "To Do",
                       ),
                       html.option(
                         [
                           attribute.value("in_progress"),
-                          attribute.selected(form.status == "in_progress"),
+                          attribute.selected(form.status == shared_types.TaskInProgress),
                         ],
                         "In Progress",
                       ),
                       html.option(
                         [
-                          attribute.value("testing"),
-                          attribute.selected(form.status == "testing"),
+                          attribute.value("review"),
+                          attribute.selected(form.status == shared_types.TaskInReview),
                         ],
                         "Review",
                       ),
                       html.option(
                         [
                           attribute.value("completed"),
-                          attribute.selected(form.status == "completed"),
+                          attribute.selected(form.status == shared_types.TaskCompleted),
                         ],
                         "Done",
                       ),
@@ -455,30 +456,30 @@ fn view_task_form(
                       html.option(
                         [
                           attribute.value("low"),
-                          attribute.selected(form.priority == "low"),
+                          attribute.selected(form.priority == shared_types.TaskLow),
                         ],
                         "Low",
                       ),
                       html.option(
                         [
                           attribute.value("medium"),
-                          attribute.selected(form.priority == "medium"),
+                          attribute.selected(form.priority == shared_types.TaskMedium),
                         ],
                         "Medium",
                       ),
                       html.option(
                         [
                           attribute.value("high"),
-                          attribute.selected(form.priority == "high"),
+                          attribute.selected(form.priority == shared_types.TaskHigh),
                         ],
                         "High",
                       ),
                       html.option(
                         [
-                          attribute.value("urgent"),
-                          attribute.selected(form.priority == "urgent"),
+                          attribute.value("critical"),
+                          attribute.selected(form.priority == shared_types.TaskCritical),
                         ],
-                        "Urgent",
+                        "Critical",
                       ),
                     ],
                   ),
@@ -670,7 +671,7 @@ fn task_card(
 ) -> Element(msg) {
   let project =
     list.find(projects, fn(p) { p.id == task.project_id })
-    |> result.unwrap(types.Project(0, "Unknown Project", "", "", "", "blue", ""))
+    |> result.unwrap(shared_types.Project(0, "Unknown Project", "", "", shared_types.ProjectPlanning, shared_types.ProjectBlue, ""))
 
   let assigned_member = case task.assigned_to {
     option.Some(member_id) ->
@@ -689,7 +690,7 @@ fn task_card(
       attribute.attribute("style", "user-select: none;"),
       attribute.attribute("data-id", int.to_string(task.id)),
       attribute.attribute("data-type", "task"),
-      attribute.attribute("data-status", task.status),
+      attribute.attribute("data-status", shared_types.task_status_to_string(task.status)),
       attribute.title("Click to edit task"),
       event.on_click(on_edit_task(task.id)),
     ],
@@ -719,7 +720,7 @@ fn task_card(
           html.div([attribute.class("flex items-center mt-4 space-x-4")], [
             html.span(
               [
-                attribute.class(colors.get_project_badge_classes(project.color)),
+                attribute.class(colors.get_project_badge_classes(shared_types.project_color_to_string(project.color))),
               ],
               [
                 html.text(project.name),
@@ -741,19 +742,19 @@ fn task_card(
               [
                 attribute.class(
                   "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium "
-                  <> status_color(task.status),
+                  <> status_color(shared_types.task_status_to_string(task.status)),
                 ),
               ],
-              [task.status |> status_label() |> html.text()],
+              [shared_types.task_status_to_string(task.status) |> status_label() |> html.text()],
             ),
             html.span(
               [
                 attribute.class(
                   "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium "
-                  <> task.priority |> priority_color(),
+                  <> shared_types.task_priority_to_string(task.priority) |> priority_color(),
                 ),
               ],
-              [task.priority |> html.text()],
+              [shared_types.task_priority_to_string(task.priority) |> html.text()],
             ),
             html.span(
               [
@@ -831,14 +832,14 @@ fn task_card(
 
 fn status_color(status: String) -> String {
   case status {
-    "completed" | "done" ->
+    "completed" ->
       "bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 border border-green-200 dark:border-green-700"
-    "in_progress" | "pending" | "active" ->
+    "in_progress" | "pending" ->
       "bg-cyan-100 dark:bg-cyan-900 text-cyan-800 dark:text-cyan-200 border border-cyan-200 dark:border-cyan-700"
-    "planning" | "todo" | "open" ->
-      "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-600"
-    "on_hold" | "review" | "testing" ->
+    "review" ->
       "bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 border border-yellow-200 dark:border-yellow-700"
+    "blocked" ->
+      "bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 border border-red-200 dark:border-red-700"
     _ ->
       "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-600"
   }
@@ -847,22 +848,17 @@ fn status_color(status: String) -> String {
 fn status_label(status: String) -> String {
   case status {
     "completed" -> "Completed"
-    "done" -> "Done"
     "in_progress" -> "In Progress"
-    "planning" -> "Planning"
-    "todo" -> "Todo"
-    "open" -> "Open"
     "pending" -> "Pending"
-    "on_hold" -> "On Hold"
-    "review" -> "Review"
-    "testing" -> "Testing"
+    "review" -> "In Review"
+    "blocked" -> "Blocked"
     _ -> "No Status"
   }
 }
 
 fn priority_color(priority: String) -> String {
   case priority {
-    "urgent" ->
+    "critical" ->
       "bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 border border-red-200 dark:border-red-700"
     "high" ->
       "bg-orange-100 dark:bg-orange-900 text-orange-800 dark:text-orange-200 border border-orange-200 dark:border-orange-700"

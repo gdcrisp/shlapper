@@ -4,6 +4,7 @@ import gleam/io
 import gleam/json
 import gleam/list
 import gleam/option.{type Option}
+import gleam/result
 import lustre
 import lustre/attribute
 import lustre/effect.{type Effect}
@@ -16,21 +17,17 @@ import pages/projects
 import pages/tasks
 import pages/team
 import rsvp
+import shared_types
 import types.{
   type CacheInfo, type DashboardStats, type FormState, type LoadingStates,
   type Project, type ProjectForm, type Task, type TaskForm, type TeamMember,
-  type View, CacheInfo, DashboardStats, DashboardView, EditingProject,
-  EditingTask, LoadingStates, NoForm, Project, ProjectForm, ProjectsView,
-  ShowingProjectForm, ShowingTaskForm, Task, TaskForm, TasksView, TeamMember,
+  type View, CacheInfo, DashboardView, EditingProject,
+  EditingTask, LoadingStates, NoForm, ProjectForm, ProjectsView,
+  ShowingProjectForm, ShowingTaskForm, TaskForm, TasksView,
   TeamView,
 }
 
 // MAIN ------------------------------------------------------------------------
-
-// Cache management constants and functions
-const cache_duration_ms = 300_000
-
-// 5 minutes
 
 @external(javascript, "./app.ffi.mjs", "getCurrentTimestamp")
 fn get_current_timestamp() -> Int
@@ -56,26 +53,8 @@ fn setup_drag_and_drop_listener(
 @external(javascript, "./app.ffi.mjs", "clearDragUpdateState")
 fn clear_drag_update_state(item_type: String, item_id: Int) -> Nil
 
-fn is_cache_valid(cache_info: CacheInfo) -> Bool {
-  case cache_info.is_valid {
-    False -> False
-    True -> {
-      let current_time = get_current_timestamp()
-      current_time - cache_info.last_fetched < cache_duration_ms
-    }
-  }
-}
-
 fn create_fresh_cache() -> CacheInfo {
   CacheInfo(is_loading: False, last_fetched: 0, is_valid: False)
-}
-
-fn create_loading_cache() -> CacheInfo {
-  CacheInfo(
-    is_loading: True,
-    last_fetched: get_current_timestamp(),
-    is_valid: False,
-  )
 }
 
 fn create_loaded_cache() -> CacheInfo {
@@ -114,10 +93,16 @@ fn project_decoder() -> decode.Decoder(Project) {
   use name <- decode.field("name", decode.string)
   use description <- decode.field("description", decode.string)
   use deadline <- decode.field("deadline", decode.string)
-  use status <- decode.field("status", decode.string)
-  use color <- decode.field("color", decode.string)
+  use status_str <- decode.field("status", decode.string)
+  use color_str <- decode.field("color", decode.string)
   use created_at <- decode.field("created_at", decode.string)
-  decode.success(Project(
+  
+  let status = shared_types.project_status_from_string(status_str) 
+    |> result.unwrap(shared_types.ProjectPlanning)
+  let color = shared_types.project_color_from_string(color_str)
+    |> result.unwrap(shared_types.ProjectBlue)
+  
+  decode.success(shared_types.Project(
     id:,
     name:,
     description:,
@@ -134,11 +119,17 @@ fn task_decoder() -> decode.Decoder(Task) {
   use title <- decode.field("title", decode.string)
   use description <- decode.field("description", decode.string)
   use assigned_to <- decode.field("assigned_to", decode.optional(decode.int))
-  use status <- decode.field("status", decode.string)
-  use priority <- decode.field("priority", decode.string)
+  use status_str <- decode.field("status", decode.string)
+  use priority_str <- decode.field("priority", decode.string)
   use due_date <- decode.field("due_date", decode.optional(decode.string))
   use hours_logged <- decode.field("hours_logged", decode.float)
-  decode.success(Task(
+  
+  let status = shared_types.task_status_from_string(status_str)
+    |> result.unwrap(shared_types.TaskPending)
+  let priority = shared_types.task_priority_from_string(priority_str)
+    |> result.unwrap(shared_types.TaskMedium)
+  
+  decode.success(shared_types.Task(
     id:,
     project_id:,
     title:,
@@ -156,7 +147,7 @@ fn team_member_decoder() -> decode.Decoder(TeamMember) {
   use name <- decode.field("name", decode.string)
   use email <- decode.field("email", decode.string)
   use role <- decode.field("role", decode.string)
-  decode.success(TeamMember(id:, name:, email:, role:))
+  decode.success(shared_types.TeamMember(id:, name:, email:, role:))
 }
 
 // Decoder for enhanced dashboard data that includes recent projects/tasks
@@ -176,7 +167,7 @@ fn dashboard_data_decoder() -> decode.Decoder(
   use recent_tasks <- decode.field("recent_tasks", decode.list(task_decoder()))
 
   let stats =
-    DashboardStats(
+    shared_types.DashboardStats(
       total_projects:,
       active_projects:,
       completed_tasks:,
@@ -189,7 +180,7 @@ fn dashboard_data_decoder() -> decode.Decoder(
 }
 
 fn init(_flags) -> #(Model, Effect(Msg)) {
-  let empty_dashboard = DashboardStats(0, 0, 0, 0, 0, 0.0)
+  let empty_dashboard = shared_types.DashboardStats(0, 0, 0, 0, 0, 0.0)
   let fresh_cache = create_fresh_cache()
   let loading_states =
     LoadingStates(fresh_cache, fresh_cache, fresh_cache, fresh_cache)
@@ -303,8 +294,8 @@ fn create_project(
       #("name", json.string(form.name)),
       #("description", json.string(form.description)),
       #("deadline", json.string(form.deadline)),
-      #("status", json.string(form.status)),
-      #("color", json.string(form.color)),
+      #("status", json.string(shared_types.project_status_to_string(form.status))),
+      #("color", json.string(shared_types.project_color_to_string(form.color))),
     ])
   rsvp.post(url, body, handler)
 }
@@ -325,8 +316,8 @@ fn update_project(
       #("name", json.string(form.name)),
       #("description", json.string(form.description)),
       #("deadline", json.string(form.deadline)),
-      #("status", json.string(form.status)),
-      #("color", json.string(form.color)),
+      #("status", json.string(shared_types.project_status_to_string(form.status))),
+      #("color", json.string(shared_types.project_color_to_string(form.color))),
     ])
   rsvp.post(url, body, handler)
 }
@@ -343,8 +334,8 @@ fn create_task(
       #("project_id", json.int(form.project_id)),
       #("title", json.string(form.title)),
       #("description", json.string(form.description)),
-      #("status", json.string(form.status)),
-      #("priority", json.string(form.priority)),
+      #("status", json.string(shared_types.task_status_to_string(form.status))),
+      #("priority", json.string(shared_types.task_priority_to_string(form.priority))),
       #("assigned_to", case form.assigned_to {
         option.Some(id) -> json.int(id)
         option.None -> json.null()
@@ -375,8 +366,8 @@ fn update_task(
       #("project_id", json.int(form.project_id)),
       #("title", json.string(form.title)),
       #("description", json.string(form.description)),
-      #("status", json.string(form.status)),
-      #("priority", json.string(form.priority)),
+      #("status", json.string(shared_types.task_status_to_string(form.status))),
+      #("priority", json.string(shared_types.task_priority_to_string(form.priority))),
       #("assigned_to", case form.assigned_to {
         option.Some(id) -> json.int(id)
         option.None -> json.null()
@@ -406,7 +397,7 @@ fn update_task_status(
       #("title", json.string(task.title)),
       #("description", json.string(task.description)),
       #("status", json.string(new_status)),
-      #("priority", json.string(task.priority)),
+      #("priority", json.string(shared_types.task_priority_to_string(task.priority))),
       #("assigned_to", case task.assigned_to {
         option.Some(id) -> json.int(id)
         option.None -> json.null()
@@ -437,7 +428,7 @@ fn update_project_status(
       #("description", json.string(project.description)),
       #("deadline", json.string(project.deadline)),
       #("status", json.string(new_status)),
-      #("color", json.string(project.color)),
+      #("color", json.string(shared_types.project_color_to_string(project.color))),
     ])
 
   rsvp.post(url, body, handler)
@@ -458,8 +449,8 @@ fn update_task_hours(
       #("project_id", json.int(task.project_id)),
       #("title", json.string(task.title)),
       #("description", json.string(task.description)),
-      #("status", json.string(task.status)),
-      #("priority", json.string(task.priority)),
+      #("status", json.string(shared_types.task_status_to_string(task.status))),
+      #("priority", json.string(shared_types.task_priority_to_string(task.priority))),
       #("assigned_to", case task.assigned_to {
         option.Some(id) -> json.int(id)
         option.None -> json.null()
@@ -735,8 +726,8 @@ fn handle_loaded_state(
           name: "",
           description: "",
           deadline: "",
-          status: "planning",
-          color: "#3B82F6",
+          status: shared_types.ProjectPlanning,
+          color: shared_types.ProjectBlue,
         )),
       ),
       effect.none(),
@@ -795,8 +786,8 @@ fn handle_loaded_state(
           },
           title: "",
           description: "",
-          status: "todo",
-          priority: "medium",
+          status: shared_types.TaskPending,
+          priority: shared_types.TaskMedium,
           assigned_to: option.None,
           due_date: option.None,
           hours_logged: 0.0,
@@ -1038,7 +1029,8 @@ fn handle_loaded_state(
               name: form.name,
               description: form.description,
               deadline: form.deadline,
-              status:,
+              status: shared_types.project_status_from_string(status) 
+                |> result.unwrap(shared_types.ProjectPlanning),
               color: form.color,
             )),
           ),
@@ -1058,7 +1050,8 @@ fn handle_loaded_state(
                 name: form.name,
                 description: form.description,
                 deadline: form.deadline,
-                status:,
+                status: shared_types.project_status_from_string(status)
+                  |> result.unwrap(shared_types.ProjectPlanning),
                 color: form.color,
               ),
             ),
@@ -1094,7 +1087,8 @@ fn handle_loaded_state(
               description: form.description,
               deadline: form.deadline,
               status: form.status,
-              color:,
+              color: shared_types.project_color_from_string(color)
+                |> result.unwrap(shared_types.ProjectBlue),
             )),
           ),
           effect.none(),
@@ -1114,7 +1108,8 @@ fn handle_loaded_state(
                 description: form.description,
                 deadline: form.deadline,
                 status: form.status,
-                color:,
+                color: shared_types.project_color_from_string(color)
+                  |> result.unwrap(shared_types.ProjectBlue),
               ),
             ),
           ),
@@ -1382,7 +1377,8 @@ fn handle_loaded_state(
               project_id: form.project_id,
               title: form.title,
               description: form.description,
-              status:,
+              status: shared_types.task_status_from_string(status)
+                |> result.unwrap(shared_types.TaskPending),
               priority: form.priority,
               assigned_to: form.assigned_to,
               due_date: form.due_date,
@@ -1405,7 +1401,8 @@ fn handle_loaded_state(
                 project_id: form.project_id,
                 title: form.title,
                 description: form.description,
-                status:,
+                status: shared_types.task_status_from_string(status)
+                  |> result.unwrap(shared_types.TaskPending),
                 priority: form.priority,
                 assigned_to: form.assigned_to,
                 due_date: form.due_date,
@@ -1444,7 +1441,8 @@ fn handle_loaded_state(
               title: form.title,
               description: form.description,
               status: form.status,
-              priority:,
+              priority: shared_types.task_priority_from_string(priority)
+                |> result.unwrap(shared_types.TaskMedium),
               assigned_to: form.assigned_to,
               due_date: form.due_date,
               hours_logged: form.hours_logged,
@@ -1467,7 +1465,8 @@ fn handle_loaded_state(
                 title: form.title,
                 description: form.description,
                 status: form.status,
-                priority:,
+                priority: shared_types.task_priority_from_string(priority)
+                  |> result.unwrap(shared_types.TaskMedium),
                 assigned_to: form.assigned_to,
                 due_date: form.due_date,
                 hours_logged: form.hours_logged,

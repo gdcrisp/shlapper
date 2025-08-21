@@ -831,8 +831,8 @@ pub fn update_project_json(
                     Some(date) -> date_to_string(date)
                     None -> ""
                   },
-                  status: sql_project.status |> option.unwrap("planning"),
-                  color: sql_project.color |> option.unwrap("blue"),
+                  status: sql_project.status |> option.unwrap(status),
+                  color: sql_project.color |> option.unwrap(""),
                   created_at: sql_project.created_at,
                 )
               let project_json = project_to_json(project)

@@ -7,6 +7,7 @@ import lustre/attribute
 import lustre/element.{type Element}
 import lustre/element/html
 import lustre/event
+import shared_types
 import types.{type DashboardStats, type LoadingStates, type Project, type Task}
 
 pub fn view_dashboard(
@@ -213,8 +214,8 @@ fn view_recent_projects(
         [attribute.class("space-y-3")],
         list.take(projects, 5)
           |> list.map(fn(project) {
-            let color_classes = colors.get_project_color_classes(project.color)
-            let color_info = colors.get_color_by_name(project.color)
+            let color_classes = colors.get_project_color_classes(shared_types.project_color_to_string(project.color))
+            let color_info = colors.get_color_by_name(shared_types.project_color_to_string(project.color))
             html.div(
               [
                 attribute.class(
@@ -241,7 +242,7 @@ fn view_recent_projects(
                       ),
                     ],
                     [
-                      html.text(project.status),
+                      html.text(shared_types.project_status_to_string(project.status)),
                     ],
                   ),
                 ]),
@@ -321,7 +322,7 @@ fn view_recent_tasks(tasks: List(Task), on_navigate: msg) -> Element(msg) {
                       ),
                     ],
                     [
-                      html.text(task.priority <> " · " <> task.status),
+                      html.text(shared_types.task_priority_to_string(task.priority) <> " · " <> shared_types.task_status_to_string(task.status)),
                     ],
                   ),
                 ]),
