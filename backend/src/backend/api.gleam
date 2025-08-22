@@ -1,5 +1,6 @@
 import backend/api_decoders
 import backend/db
+import backend/shared_types
 import backend/sql
 import gleam/dynamic
 import gleam/int
@@ -12,77 +13,50 @@ import gleam/string_tree
 import gleam/time/calendar.{type Date}
 import wisp.{type Request, type Response}
 
-// Legacy types for compatibility with frontend
-pub type Project {
-  Project(
-    id: Int,
-    name: String,
-    description: String,
-    deadline: String,
-    status: String,
-    color: String,
-    created_at: String,
-  )
-}
+// Use shared types directly - no more duplication!
+pub type Project = shared_types.Project
+pub type Task = shared_types.Task  
+pub type TeamMember = shared_types.TeamMember
+pub type DashboardStats = shared_types.DashboardStats
 
-pub type Task {
-  Task(
-    id: Int,
-    project_id: Int,
-    title: String,
-    description: String,
-    assigned_to: Option(Int),
-    status: String,
-    priority: String,
-    due_date: Option(String),
-    hours_logged: Float,
-  )
-}
-
-pub type TeamMember {
-  TeamMember(id: Int, name: String, email: String, role: String)
-}
-
-pub type DashboardStats {
-  DashboardStats(
-    total_projects: Int,
-    active_projects: Int,
-    completed_tasks: Int,
-    pending_tasks: Int,
-    team_members: Int,
-    total_hours: Float,
-  )
-}
-
-// Conversion functions from SQL types to API types
+// Simplified conversion functions from SQL types to shared types
 fn sql_project_to_project(sql_project: sql.GetProjectsRow) -> Project {
-  Project(
+  shared_types.Project(
     id: sql_project.id,
     name: sql_project.name,
     description: sql_project.description |> option.unwrap(""),
     deadline: case sql_project.deadline {
-      Some(date) -> date_to_string(date)
-      None -> ""
+      Some(date) -> Some(date)
+      None -> None
     },
-    status: sql_project.status |> option.unwrap("planning"),
-    color: sql_project.color |> option.unwrap("blue"),
+    status: case sql_project.status |> option.unwrap("planning") |> shared_types.project_status_from_string {
+      Ok(status) -> status
+      Error(_) -> shared_types.ProjectPlanning // fallback
+    },
+    color: case sql_project.color |> option.unwrap("blue") |> shared_types.project_color_from_string {
+      Ok(color) -> color
+      Error(_) -> shared_types.ProjectBlue // fallback
+    },
     created_at: sql_project.created_at,
   )
 }
 
 fn sql_task_to_task(sql_task: sql.GetTasksRow) -> Task {
-  Task(
+  shared_types.Task(
     id: sql_task.id,
     project_id: sql_task.project_id,
     title: sql_task.title,
     description: sql_task.description |> option.unwrap(""),
     assigned_to: sql_task.assigned_to,
-    status: sql_task.status |> option.unwrap("pending"),
-    priority: sql_task.priority |> option.unwrap("medium"),
-    due_date: case sql_task.due_date {
-      Some(date) -> Some(date_to_string(date))
-      None -> None
+    status: case sql_task.status |> option.unwrap("pending") |> shared_types.task_status_from_string {
+      Ok(status) -> status
+      Error(_) -> shared_types.TaskPending // fallback
     },
+    priority: case sql_task.priority |> option.unwrap("medium") |> shared_types.task_priority_from_string {
+      Ok(priority) -> priority
+      Error(_) -> shared_types.TaskMedium // fallback
+    },
+    due_date: sql_task.due_date,
     hours_logged: sql_task.hours_logged |> option.unwrap(0.0),
   )
 }
@@ -96,7 +70,7 @@ fn sql_team_member_to_team_member(
     Some("admin") -> "Administrator"
     _ -> "Unknown"
   }
-  TeamMember(
+  shared_types.TeamMember(
     id: sql_member.id,
     name: sql_member.name,
     email: sql_member.email,
@@ -107,7 +81,7 @@ fn sql_team_member_to_team_member(
 fn sql_dashboard_stats_to_dashboard_stats(
   sql_stats: sql.GetDashboardStatsRow,
 ) -> DashboardStats {
-  DashboardStats(
+  shared_types.DashboardStats(
     total_projects: sql_stats.total_projects,
     active_projects: sql_stats.active_projects,
     completed_tasks: sql_stats.completed_tasks,
@@ -300,18 +274,21 @@ fn handle_add_task_json(
             "🔍 DEBUG: Task created successfully: " <> string.inspect(sql_task),
           )
           let task =
-            Task(
+            shared_types.Task(
               id: sql_task.id,
               project_id: sql_task.project_id,
               title: sql_task.title,
               description: sql_task.description |> option.unwrap(""),
               assigned_to: sql_task.assigned_to,
-              status: sql_task.status |> option.unwrap("pending"),
-              priority: sql_task.priority |> option.unwrap("medium"),
-              due_date: case sql_task.due_date {
-                Some(date) -> Some(date_to_string(date))
-                None -> None
+              status: case sql_task.status |> option.unwrap("pending") |> shared_types.task_status_from_string {
+                Ok(status) -> status
+                Error(_) -> shared_types.TaskPending
               },
+              priority: case sql_task.priority |> option.unwrap("medium") |> shared_types.task_priority_from_string {
+                Ok(priority) -> priority
+                Error(_) -> shared_types.TaskMedium
+              },
+              due_date: sql_task.due_date,
               hours_logged: sql_task.hours_logged |> option.unwrap(0.0),
             )
           let task_json = task_to_json(task)
@@ -428,18 +405,21 @@ fn handle_update_task_json(
       {
         Ok([sql_task]) -> {
           let task =
-            Task(
+            shared_types.Task(
               id: sql_task.id,
               project_id: sql_task.project_id,
               title: sql_task.title,
               description: sql_task.description |> option.unwrap(""),
               assigned_to: sql_task.assigned_to,
-              status: sql_task.status |> option.unwrap("pending"),
-              priority: sql_task.priority |> option.unwrap("medium"),
-              due_date: case sql_task.due_date {
-                Some(date) -> Some(date_to_string(date))
-                None -> None
+              status: case sql_task.status |> option.unwrap("pending") |> shared_types.task_status_from_string {
+                Ok(status) -> status
+                Error(_) -> shared_types.TaskPending
               },
+              priority: case sql_task.priority |> option.unwrap("medium") |> shared_types.task_priority_from_string {
+                Ok(priority) -> priority
+                Error(_) -> shared_types.TaskMedium
+              },
+              due_date: sql_task.due_date,
               hours_logged: sql_task.hours_logged |> option.unwrap(0.0),
             )
           let task_json = task_to_json(task)
@@ -530,16 +510,19 @@ pub fn update_project_json(
           {
             Ok([sql_project]) -> {
               let project =
-                Project(
+                shared_types.Project(
                   id: sql_project.id,
                   name: sql_project.name,
                   description: sql_project.description |> option.unwrap(""),
-                  deadline: case sql_project.deadline {
-                    Some(date) -> date_to_string(date)
-                    None -> ""
+                  deadline: sql_project.deadline,
+                  status: case sql_project.status |> option.unwrap(project_request.status) |> shared_types.project_status_from_string {
+                    Ok(status) -> status
+                    Error(_) -> shared_types.ProjectPlanning
                   },
-                  status: sql_project.status |> option.unwrap(project_request.status),
-                  color: sql_project.color |> option.unwrap(""),
+                  color: case sql_project.color |> option.unwrap("blue") |> shared_types.project_color_from_string {
+                    Ok(color) -> color
+                    Error(_) -> shared_types.ProjectBlue
+                  },
                   created_at: sql_project.created_at,
                 )
               let project_json = project_to_json(project)
@@ -695,15 +678,18 @@ pub fn get_team_json(conn: db.DatabaseConnection) -> Response {
   }
 }
 
-// JSON converters
+// JSON converters for shared types
 fn project_to_json(project: Project) -> json.Json {
   json.object([
     #("id", json.int(project.id)),
     #("name", json.string(project.name)),
     #("description", json.string(project.description)),
-    #("deadline", json.string(project.deadline)),
-    #("status", json.string(project.status)),
-    #("color", json.string(project.color)),
+    #("deadline", case project.deadline {
+      Some(date) -> json.string(date_to_string(date))
+      None -> json.string("")
+    }),
+    #("status", json.string(shared_types.project_status_to_string(project.status))),
+    #("color", json.string(shared_types.project_color_to_string(project.color))),
     #("created_at", json.string(project.created_at)),
   ])
 }
@@ -718,10 +704,10 @@ fn task_to_json(task: Task) -> json.Json {
       Some(id) -> json.int(id)
       None -> json.null()
     }),
-    #("status", json.string(task.status)),
-    #("priority", json.string(task.priority)),
+    #("status", json.string(shared_types.task_status_to_string(task.status))),
+    #("priority", json.string(shared_types.task_priority_to_string(task.priority))),
     #("due_date", case task.due_date {
-      Some(date) -> json.string(date)
+      Some(date) -> json.string(date_to_string(date))
       None -> json.null()
     }),
     #("hours_logged", json.float(task.hours_logged)),
@@ -782,16 +768,19 @@ fn project_creation_logic(
       {
         Ok([sql_project]) -> {
           let project =
-            Project(
+            shared_types.Project(
               id: sql_project.id,
               name: sql_project.name,
               description: sql_project.description |> option.unwrap(""),
-              deadline: case sql_project.deadline {
-                Some(date) -> date_to_string(date)
-                None -> ""
+              deadline: sql_project.deadline,
+              status: case sql_project.status |> option.unwrap("planning") |> shared_types.project_status_from_string {
+                Ok(status) -> status
+                Error(_) -> shared_types.ProjectPlanning
               },
-              status: sql_project.status |> option.unwrap("planning"),
-              color: sql_project.color |> option.unwrap("blue"),
+              color: case sql_project.color |> option.unwrap("blue") |> shared_types.project_color_from_string {
+                Ok(color) -> color
+                Error(_) -> shared_types.ProjectBlue
+              },
               created_at: sql_project.created_at,
             )
           let project_json = project_to_json(project)
