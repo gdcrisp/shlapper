@@ -3,7 +3,6 @@ import backend/db
 import backend/web
 import gleam/http.{Options, Post}
 import gleam/int
-import gleam/io
 import wisp.{type Request, type Response}
 
 // Helper to ensure all responses have CORS headers
@@ -48,7 +47,6 @@ pub fn handle_request(req: Request, conn: db.DatabaseConnection) -> Response {
         ["api", "tasks"] ->
           case req.method {
             Post -> {
-              io.println("🔍 Router: POST /api/tasks request received")
               api.add_task_json(conn, req)
             }
             _ -> api.get_tasks_json(conn, req)

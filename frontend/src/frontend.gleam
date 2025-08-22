@@ -1,6 +1,5 @@
 import gleam/dynamic/decode
 import gleam/int
-import gleam/io
 import gleam/json
 import gleam/list
 import gleam/option.{type Option}
@@ -305,10 +304,7 @@ fn update_project(
   form: ProjectForm,
   on_response handle_response: fn(Result(Project, rsvp.Error)) -> msg,
 ) -> Effect(msg) {
-  io.print("🔍 Frontend: update_project called for project ID: " <> int.to_string(project_id))
-  io.print("🔍 Frontend: project form name: " <> form.name)
   let url = "http://localhost:3000/api/projects/" <> int.to_string(project_id)
-  io.print("🔍 Frontend: making POST request to: " <> url)
   let decoder = project_decoder()
   let handler = rsvp.expect_json(decoder, handle_response)
   let body =
@@ -344,8 +340,7 @@ fn create_task(
         option.Some(date) -> json.string(date)
         option.None -> json.null()
       }),
-      #("hours_logged", json.float(0.0)),
-      // Default to 0.0 hours for new tasks
+      #("hours_logged", json.float(form.hours_logged)),
     ])
   rsvp.post(url, body, handler)
 }
@@ -355,10 +350,7 @@ fn update_task(
   form: TaskForm,
   on_response handle_response: fn(Result(Task, rsvp.Error)) -> msg,
 ) -> Effect(msg) {
-  io.print("🔍 Frontend: update_task called for task ID: " <> int.to_string(task_id))
-  io.print("🔍 Frontend: task form title: " <> form.title)
   let url = "http://localhost:3000/api/tasks/" <> int.to_string(task_id)
-  io.print("🔍 Frontend: making POST request to: " <> url)
   let decoder = task_decoder()
   let handler = rsvp.expect_json(decoder, handle_response)
   let body =
@@ -780,9 +772,9 @@ fn handle_loaded_state(
         current_view,
         loading_states,
         ShowingTaskForm(TaskForm(
-          project_id: case projects {
-            [first, ..] -> first.id
-            [] -> 1
+          project_id: case current_view {
+            TasksView(option.Some(project_id)) -> project_id
+            _ -> 0
           },
           title: "",
           description: "",
@@ -1130,10 +1122,8 @@ fn handle_loaded_state(
       }
 
     SubmitProjectForm -> {
-      io.print("🔍 Frontend: SubmitProjectForm message received")
       case form_state {
         ShowingProjectForm(form) -> {
-          io.print("🔍 Frontend: Creating new project")
           #(
             Loaded(
               dashboard,
@@ -1148,7 +1138,6 @@ fn handle_loaded_state(
           )
         }
         EditingProject(project_id, form) -> {
-          io.print("🔍 Frontend: Editing existing project with ID: " <> int.to_string(project_id))
           #(
             Loaded(
               dashboard,
@@ -1163,7 +1152,6 @@ fn handle_loaded_state(
           )
         }
         _ -> {
-          io.print("🔍 Frontend: SubmitProjectForm called but form_state is not ShowingProjectForm or EditingProject")
           #(
             Loaded(
               dashboard,
@@ -1180,7 +1168,7 @@ fn handle_loaded_state(
       }
     }
 
-    UpdateTaskFormProjectId(project_id) ->
+    UpdateTaskFormProjectId(project_id) -> {
       case form_state {
         ShowingTaskForm(form) -> #(
           Loaded(
@@ -1191,7 +1179,7 @@ fn handle_loaded_state(
             current_view,
             loading_states,
             ShowingTaskForm(TaskForm(
-              project_id:,
+              project_id: project_id,
               title: form.title,
               description: form.description,
               status: form.status,
@@ -1214,7 +1202,7 @@ fn handle_loaded_state(
             EditingTask(
               task_id,
               TaskForm(
-                project_id:,
+                project_id: project_id,
                 title: form.title,
                 description: form.description,
                 status: form.status,
@@ -1240,6 +1228,7 @@ fn handle_loaded_state(
           effect.none(),
         )
       }
+    }
 
     UpdateTaskFormTitle(title) ->
       case form_state {
@@ -1673,40 +1662,72 @@ fn handle_loaded_state(
       }
 
     SubmitTaskForm -> {
-      io.print("🔍 Frontend: SubmitTaskForm message received")
       case form_state {
         ShowingTaskForm(form) -> {
-          io.print("🔍 Frontend: Creating new task")
-          #(
-            Loaded(
-              dashboard,
-              projects,
-              tasks,
-              team_members,
-              current_view,
-              loading_states,
-              NoForm,
-            ),
-            create_task(form, ApiTaskAdded),
-          )
+          case form.project_id {
+            0 -> {
+              #(
+                Loaded(
+                  dashboard,
+                  projects,
+                  tasks,
+                  team_members,
+                  current_view,
+                  loading_states,
+                  form_state,
+                ),
+                effect.none(),
+              )
+            }
+            _ -> {
+              #(
+                Loaded(
+                  dashboard,
+                  projects,
+                  tasks,
+                  team_members,
+                  current_view,
+                  loading_states,
+                  NoForm,
+                ),
+                create_task(form, ApiTaskAdded),
+              )
+            }
+          }
         }
         EditingTask(task_id, form) -> {
-          io.print("🔍 Frontend: Editing existing task with ID: " <> int.to_string(task_id))
-          #(
-            Loaded(
-              dashboard,
-              projects,
-              tasks,
-              team_members,
-              current_view,
-              loading_states,
-              NoForm,
-            ),
-            update_task(task_id, form, ApiTaskStatusUpdated),
-          )
+          case form.project_id {
+            0 -> {
+              #(
+                Loaded(
+                  dashboard,
+                  projects,
+                  tasks,
+                  team_members,
+                  current_view,
+                  loading_states,
+                  form_state,
+                ),
+                effect.none(),
+              )
+            }
+            _ -> {
+              #(
+                Loaded(
+                  dashboard,
+                  projects,
+                  tasks,
+                  team_members,
+                  current_view,
+                  loading_states,
+                  NoForm,
+                ),
+                update_task(task_id, form, ApiTaskStatusUpdated),
+              )
+            }
+          }
         }
         _ -> {
-          io.print("🔍 Frontend: SubmitTaskForm called but form_state is not ShowingTaskForm or EditingTask")
           #(
             Loaded(
               dashboard,

@@ -4,7 +4,6 @@ import backend/shared_types
 import backend/sql
 import gleam/dynamic
 import gleam/int
-import gleam/io
 import gleam/json
 import gleam/list
 import gleam/option.{type Option, None, Some}
@@ -228,7 +227,6 @@ pub fn get_dashboard_json(conn: db.DatabaseConnection) -> Response {
 
 // Helper to ensure all responses have CORS headers
 pub fn add_task_json(conn: db.DatabaseConnection, req: Request) -> Response {
-  io.println("🔍 API: add_task_json called")
   use json_body <- wisp.require_json(req)
   handle_add_task_json(conn, json_body)
 }
@@ -239,13 +237,6 @@ fn handle_add_task_json(
 ) -> Response {
   case api_decoders.decode_create_task_request(json_body) {
     Ok(task_request) -> {
-      io.println("🔍 DEBUG: All parsing successful, about to call db.add_task")
-      io.println(
-        "🔍 DEBUG: Parameters - project_id: "
-        <> int.to_string(task_request.project_id)
-        <> ", title: "
-        <> task_request.title,
-      )
 
       let due_date = case task_request.due_date {
         Some(date_str) ->
@@ -263,16 +254,13 @@ fn handle_add_task_json(
           task_request.title,
           task_request.description,
           task_request.assigned_to,
-          task_request.status,
-          task_request.priority,
+          shared_types.task_status_to_string(task_request.status),   // Convert enum to string for DB
+          shared_types.task_priority_to_string(task_request.priority), // Convert enum to string for DB
           due_date,
           task_request.hours_logged,
         )
       {
         Ok([sql_task]) -> {
-          io.println(
-            "🔍 DEBUG: Task created successfully: " <> string.inspect(sql_task),
-          )
           let task =
             shared_types.Task(
               id: sql_task.id,
@@ -304,7 +292,6 @@ fn handle_add_task_json(
           |> wisp.set_header("access-control-allow-headers", "Content-Type")
         }
         Ok(_) -> {
-          io.println("🔍 DEBUG: Database returned unexpected result format")
           let error_json =
             json.object([
               #("error", json.string("Unexpected database result format")),
@@ -321,13 +308,12 @@ fn handle_add_task_json(
           |> wisp.set_header("access-control-allow-headers", "Content-Type")
         }
         Error(err) -> {
-          io.println("🔍 DEBUG: Database error: " <> string.inspect(err))
           let error_json =
             json.object([
               #(
                 "error",
                 json.string(
-                  "Database constraint error: " <> string.inspect(err),
+                  "Database operation failed. Please check that all references are valid.",
                 ),
               ),
             ])
@@ -374,9 +360,6 @@ fn handle_update_task_json(
   json_body: dynamic.Dynamic,
   task_id: Int,
 ) -> Response {
-  io.println(
-    "🔍 API: update_task_json called for task " <> int.to_string(task_id),
-  )
 
   case api_decoders.decode_update_task_request(json_body) {
     Ok(task_request) -> {
@@ -397,8 +380,8 @@ fn handle_update_task_json(
           task_request.title,
           task_request.description,
           task_request.assigned_to,
-          task_request.status,
-          task_request.priority,
+          shared_types.task_status_to_string(task_request.status),   // Convert enum to string for DB
+          shared_types.task_priority_to_string(task_request.priority), // Convert enum to string for DB
           due_date,
           task_request.hours_logged,
         )
@@ -451,12 +434,9 @@ fn handle_update_task_json(
           |> wisp.set_header("access-control-allow-headers", "Content-Type")
         }
         Error(err) -> {
-          io.println(
-            "🔍 DEBUG: Update task database error: " <> string.inspect(err),
-          )
           let error_json =
             json.object([
-              #("error", json.string("Database error: " <> string.inspect(err))),
+              #("error", json.string("Update failed")),
             ])
           wisp.json_response(
             string_tree.from_string(json.to_string(error_json)),
@@ -504,8 +484,8 @@ pub fn update_project_json(
               project_request.name,
               project_request.description,
               deadline_date,
-              project_request.status,
-              project_request.color,
+              shared_types.project_status_to_string(project_request.status), // Convert enum to string for DB
+              shared_types.project_color_to_string(project_request.color),   // Convert enum to string for DB
             )
           {
             Ok([sql_project]) -> {
@@ -515,9 +495,9 @@ pub fn update_project_json(
                   name: sql_project.name,
                   description: sql_project.description |> option.unwrap(""),
                   deadline: sql_project.deadline,
-                  status: case sql_project.status |> option.unwrap(project_request.status) |> shared_types.project_status_from_string {
+                  status: case sql_project.status |> option.unwrap(shared_types.project_status_to_string(project_request.status)) |> shared_types.project_status_from_string {
                     Ok(status) -> status
-                    Error(_) -> shared_types.ProjectPlanning
+                    Error(_) -> project_request.status  // Use the validated request status as fallback
                   },
                   color: case sql_project.color |> option.unwrap("blue") |> shared_types.project_color_from_string {
                     Ok(color) -> color
@@ -540,17 +520,10 @@ pub fn update_project_json(
             Ok(_) ->
               wisp.internal_server_error()
               |> wisp.set_header("access-control-allow-origin", "*")
-            Error(err) -> {
-              io.println(
-                "🔍 DEBUG: Update project database error: "
-                <> string.inspect(err),
-              )
+        Error(_err) -> {
               let error_json =
                 json.object([
-                  #(
-                    "error",
-                    json.string("Database error: " <> string.inspect(err)),
-                  ),
+                  #("error", json.string("Update failed")),
                 ])
               wisp.json_response(
                 string_tree.from_string(json.to_string(error_json)),
@@ -734,8 +707,8 @@ pub fn add_project_json(conn: db.DatabaseConnection, req: Request) -> Response {
         project_request.name,
         project_request.description,
         project_request.deadline,
-        project_request.status,
-        project_request.color,
+        project_request.status,  // Now passing enum directly!
+        project_request.color,   // Now passing enum directly!
       )
     }
     Error(decode_errors) -> {
@@ -758,13 +731,20 @@ fn project_creation_logic(
   name: String,
   description: String,
   deadline_str: String,
-  status: String,
-  color: String,
+  status: shared_types.ProjectStatus,  // Now takes enum directly!
+  color: shared_types.ProjectColor,    // Now takes enum directly!
 ) -> Response {
   case parse_date(deadline_str) {
     Ok(deadline_date) -> {
       case
-        db.add_project(conn, name, description, deadline_date, status, color)
+        db.add_project(
+          conn, 
+          name, 
+          description, 
+          deadline_date, 
+          shared_types.project_status_to_string(status),  // Convert enum to string for DB
+          shared_types.project_color_to_string(color)     // Convert enum to string for DB
+        )
       {
         Ok([sql_project]) -> {
           let project =

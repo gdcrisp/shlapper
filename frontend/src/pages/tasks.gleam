@@ -332,19 +332,28 @@ fn view_task_form(
                     event.on_input(fn(value) {
                       case int.parse(value) {
                         Ok(id) -> on_update_project_id(id)
-                        Error(_) -> on_update_project_id(1)
+                        Error(_) -> on_update_project_id(0)
                       }
                     }),
                   ],
-                  list.map(projects, fn(project) {
+                  [
                     html.option(
                       [
-                        attribute.value(int.to_string(project.id)),
-                        attribute.selected(project.id == form.project_id),
+                        attribute.value("0"),
+                        attribute.selected(form.project_id == 0),
                       ],
-                      project.name,
-                    )
-                  }),
+                      "Select a project...",
+                    ),
+                    ..list.map(projects, fn(project) {
+                      html.option(
+                        [
+                          attribute.value(int.to_string(project.id)),
+                          attribute.selected(project.id == form.project_id),
+                        ],
+                        project.name,
+                      )
+                    })
+                  ],
                 ),
               ]),
               html.div([], [
@@ -621,12 +630,19 @@ fn view_task_form(
                 html.button(
                   [
                     attribute.type_("button"),
-                    attribute.class(
-                      "px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-md transition-colors",
-                    ),
-                    event.on_click(on_submit),
+                    attribute.class(case form.project_id {
+                      0 -> "px-4 py-2 text-sm font-medium text-gray-400 bg-gray-300 dark:bg-gray-600 cursor-not-allowed rounded-md"
+                      _ -> "px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-md transition-colors"
+                    }),
+                    case form.project_id {
+                      0 -> attribute.disabled(True)
+                      _ -> event.on_click(on_submit)
+                    },
                   ],
-                  [html.text(submit_text)],
+                  [html.text(case form.project_id {
+                    0 -> "Select a project first"
+                    _ -> submit_text
+                  })],
                 ),
               ]),
             ],

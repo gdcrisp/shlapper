@@ -87,17 +87,17 @@ pub type DashboardStats {
   )
 }
 
-// API Request types
+// API Request types - now using enums for type safety!
 pub type CreateProjectRequest {
   CreateProjectRequest(
     name: String,
     description: String,
     deadline: String,
     // Will be parsed to Date
-    status: String,
-    // Will be converted to ProjectStatus
-    color: String,
-    // Will be converted to ProjectColor
+    status: ProjectStatus,
+    // Now using enum directly!
+    color: ProjectColor,
+    // Now using enum directly!
   )
 }
 
@@ -107,10 +107,10 @@ pub type UpdateProjectRequest {
     description: String,
     deadline: String,
     // Will be parsed to Date
-    status: String,
-    // Will be converted to ProjectStatus
-    color: String,
-    // Will be converted to ProjectColor
+    status: ProjectStatus,
+    // Now using enum directly!
+    color: ProjectColor,
+    // Now using enum directly!
   )
 }
 
@@ -120,10 +120,10 @@ pub type CreateTaskRequest {
     title: String,
     description: String,
     assigned_to: Option(Int),
-    status: String,
-    // Will be converted to TaskStatus
-    priority: String,
-    // Will be converted to TaskPriority
+    status: TaskStatus,
+    // Now using enum directly!
+    priority: TaskPriority,
+    // Now using enum directly!
     due_date: Option(String),
     // Will be parsed to Date
     hours_logged: Float,
@@ -136,10 +136,10 @@ pub type UpdateTaskRequest {
     title: String,
     description: String,
     assigned_to: Option(Int),
-    status: String,
-    // Will be converted to TaskStatus
-    priority: String,
-    // Will be converted to TaskPriority
+    status: TaskStatus,
+    // Now using enum directly!
+    priority: TaskPriority,
+    // Now using enum directly!
     due_date: Option(String),
     // Will be parsed to Date
     hours_logged: Float,
