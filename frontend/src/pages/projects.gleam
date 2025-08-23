@@ -98,17 +98,11 @@ fn view_projects_kanban(
   let planning_projects =
     list.filter(projects, fn(p) { p.status == shared_types.ProjectPlanning })
   let active_projects =
-    list.filter(projects, fn(p) {
-      p.status == shared_types.ProjectInProgress
-    })
+    list.filter(projects, fn(p) { p.status == shared_types.ProjectInProgress })
   let completed_projects =
-    list.filter(projects, fn(p) {
-      p.status == shared_types.ProjectCompleted
-    })
+    list.filter(projects, fn(p) { p.status == shared_types.ProjectCompleted })
   let on_hold_projects =
-    list.filter(projects, fn(p) {
-      p.status == shared_types.ProjectOnHold
-    })
+    list.filter(projects, fn(p) { p.status == shared_types.ProjectOnHold })
 
   html.div(
     [attribute.class("grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6")],
@@ -323,34 +317,42 @@ fn view_project_form(
                     event.on_input(on_update_status),
                   ],
                   [
-                     html.option(
-                       [
-                         attribute.value("planning"),
-                         attribute.selected(form.status == shared_types.ProjectPlanning),
-                       ],
-                       "Planning",
-                     ),
-                     html.option(
-                       [
-                         attribute.value("active"),
-                         attribute.selected(form.status == shared_types.ProjectInProgress),
-                       ],
-                       "Active",
-                     ),
-                     html.option(
-                       [
-                         attribute.value("on_hold"),
-                         attribute.selected(form.status == shared_types.ProjectOnHold),
-                       ],
-                       "On Hold",
-                     ),
-                     html.option(
-                       [
-                         attribute.value("completed"),
-                         attribute.selected(form.status == shared_types.ProjectCompleted),
-                       ],
-                       "Completed",
-                     ),
+                    html.option(
+                      [
+                        attribute.value("planning"),
+                        attribute.selected(
+                          form.status == shared_types.ProjectPlanning,
+                        ),
+                      ],
+                      "Planning",
+                    ),
+                    html.option(
+                      [
+                        attribute.value("active"),
+                        attribute.selected(
+                          form.status == shared_types.ProjectInProgress,
+                        ),
+                      ],
+                      "Active",
+                    ),
+                    html.option(
+                      [
+                        attribute.value("on_hold"),
+                        attribute.selected(
+                          form.status == shared_types.ProjectOnHold,
+                        ),
+                      ],
+                      "On Hold",
+                    ),
+                    html.option(
+                      [
+                        attribute.value("completed"),
+                        attribute.selected(
+                          form.status == shared_types.ProjectCompleted,
+                        ),
+                      ],
+                      "Completed",
+                    ),
                   ],
                 ),
               ]),
@@ -366,7 +368,9 @@ fn view_project_form(
                 html.div(
                   [attribute.class("grid grid-cols-8 gap-2")],
                   list.map(colors.get_material_colors(), fn(color) {
-                     let is_selected = color.name == shared_types.project_color_to_string(form.color)
+                    let is_selected =
+                      color.name
+                      == shared_types.project_color_to_string(form.color)
                     let border_class = case is_selected {
                       True ->
                         "ring-2 ring-gray-900 dark:ring-white ring-offset-2"
@@ -377,7 +381,7 @@ fn view_project_form(
                       [
                         attribute.type_("button"),
                         attribute.class(
-                        "w-8 h-8 rounded-full transition-all duration-200 shadow-sm hover:scale-110 "
+                          "w-8 h-8 rounded-full transition-all duration-200 shadow-sm hover:scale-110 "
                           <> color.bg_class
                           <> " "
                           <> border_class,
@@ -403,7 +407,7 @@ fn view_project_form(
                 ),
                 html.button(
                   [
-                     attribute.type_("button"),
+                    attribute.type_("button"),
                     attribute.class(
                       "px-4 py-2 text-sm font-medium text-white bg-cyan-600 hover:bg-cyan-700 rounded-md transition-colors",
                     ),
@@ -451,7 +455,10 @@ fn project_card(
   on_edit_project: fn(Int) -> msg,
   _on_update_project_status: fn(Int, String) -> msg,
 ) -> Element(msg) {
-  let color_classes = colors.get_project_color_classes(shared_types.project_color_to_string(project.color))
+  let color_classes =
+    project.color
+    |> shared_types.project_color_to_string
+    |> colors.get_project_color_classes
 
   html.div(
     [
@@ -463,7 +470,10 @@ fn project_card(
       attribute.attribute("style", "user-select: none;"),
       attribute.attribute("data-id", int.to_string(project.id)),
       attribute.attribute("data-type", "project"),
-      attribute.attribute("data-status", shared_types.project_status_to_string(project.status)),
+      attribute.attribute(
+        "data-status",
+        shared_types.project_status_to_string(project.status),
+      ),
       attribute.title("Click to edit project"),
       event.on_click(on_edit_project(project.id)),
     ],
@@ -495,7 +505,7 @@ fn project_card(
                   "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-white bg-opacity-20 backdrop-blur-sm",
                 ),
               ],
-               [html.text(shared_types.project_status_to_string(project.status))],
+              [html.text(shared_types.project_status_to_string(project.status))],
             ),
             html.span(
               [
