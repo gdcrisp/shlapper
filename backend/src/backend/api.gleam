@@ -6,17 +6,23 @@ import gleam/dynamic
 import gleam/int
 import gleam/json
 import gleam/list
-import gleam/option.{type Option, None, Some}
+import gleam/option.{None, Some}
 import gleam/string
-import gleam/string_tree
 import gleam/time/calendar.{type Date}
 import wisp.{type Request, type Response}
 
 // Use shared types directly - no more duplication!
-pub type Project = shared_types.Project
-pub type Task = shared_types.Task  
-pub type TeamMember = shared_types.TeamMember
-pub type DashboardStats = shared_types.DashboardStats
+pub type Project =
+  shared_types.Project
+
+pub type Task =
+  shared_types.Task
+
+pub type TeamMember =
+  shared_types.TeamMember
+
+pub type DashboardStats =
+  shared_types.DashboardStats
 
 // Simplified conversion functions from SQL types to shared types
 fn sql_project_to_project(sql_project: sql.GetProjectsRow) -> Project {
@@ -28,13 +34,23 @@ fn sql_project_to_project(sql_project: sql.GetProjectsRow) -> Project {
       Some(date) -> Some(date)
       None -> None
     },
-    status: case sql_project.status |> option.unwrap("planning") |> shared_types.project_status_from_string {
+    status: case
+      sql_project.status
+      |> option.unwrap("planning")
+      |> shared_types.project_status_from_string
+    {
       Ok(status) -> status
-      Error(_) -> shared_types.ProjectPlanning // fallback
+      Error(_) -> shared_types.ProjectPlanning
+      // fallback
     },
-    color: case sql_project.color |> option.unwrap("blue") |> shared_types.project_color_from_string {
+    color: case
+      sql_project.color
+      |> option.unwrap("blue")
+      |> shared_types.project_color_from_string
+    {
       Ok(color) -> color
-      Error(_) -> shared_types.ProjectBlue // fallback
+      Error(_) -> shared_types.ProjectBlue
+      // fallback
     },
     created_at: sql_project.created_at,
   )
@@ -47,13 +63,23 @@ fn sql_task_to_task(sql_task: sql.GetTasksRow) -> Task {
     title: sql_task.title,
     description: sql_task.description |> option.unwrap(""),
     assigned_to: sql_task.assigned_to,
-    status: case sql_task.status |> option.unwrap("pending") |> shared_types.task_status_from_string {
+    status: case
+      sql_task.status
+      |> option.unwrap("pending")
+      |> shared_types.task_status_from_string
+    {
       Ok(status) -> status
-      Error(_) -> shared_types.TaskPending // fallback
+      Error(_) -> shared_types.TaskPending
+      // fallback
     },
-    priority: case sql_task.priority |> option.unwrap("medium") |> shared_types.task_priority_from_string {
+    priority: case
+      sql_task.priority
+      |> option.unwrap("medium")
+      |> shared_types.task_priority_from_string
+    {
       Ok(priority) -> priority
-      Error(_) -> shared_types.TaskMedium // fallback
+      Error(_) -> shared_types.TaskMedium
+      // fallback
     },
     due_date: sql_task.due_date,
     hours_logged: sql_task.hours_logged |> option.unwrap(0.0),
@@ -184,7 +210,7 @@ pub fn get_dashboard_json(conn: db.DatabaseConnection) -> Response {
             ])
 
           wisp.json_response(
-            string_tree.from_string(json.to_string(stats_json)),
+            json.to_string(stats_json),
             200,
           )
           |> wisp.set_header("access-control-allow-origin", "*")
@@ -208,7 +234,7 @@ pub fn get_dashboard_json(conn: db.DatabaseConnection) -> Response {
               #("recent_tasks", json.array(from: [], of: task_to_json)),
             ])
           wisp.json_response(
-            string_tree.from_string(json.to_string(empty_stats)),
+            json.to_string(empty_stats),
             200,
           )
           |> wisp.set_header("access-control-allow-origin", "*")
@@ -237,7 +263,6 @@ fn handle_add_task_json(
 ) -> Response {
   case api_decoders.decode_create_task_request(json_body) {
     Ok(task_request) -> {
-
       let due_date = case task_request.due_date {
         Some(date_str) ->
           case parse_date(date_str) {
@@ -254,8 +279,10 @@ fn handle_add_task_json(
           task_request.title,
           task_request.description,
           task_request.assigned_to,
-          shared_types.task_status_to_string(task_request.status),   // Convert enum to string for DB
-          shared_types.task_priority_to_string(task_request.priority), // Convert enum to string for DB
+          shared_types.task_status_to_string(task_request.status),
+          // Convert enum to string for DB
+          shared_types.task_priority_to_string(task_request.priority),
+          // Convert enum to string for DB
           due_date,
           task_request.hours_logged,
         )
@@ -268,11 +295,19 @@ fn handle_add_task_json(
               title: sql_task.title,
               description: sql_task.description |> option.unwrap(""),
               assigned_to: sql_task.assigned_to,
-              status: case sql_task.status |> option.unwrap("pending") |> shared_types.task_status_from_string {
+              status: case
+                sql_task.status
+                |> option.unwrap("pending")
+                |> shared_types.task_status_from_string
+              {
                 Ok(status) -> status
                 Error(_) -> shared_types.TaskPending
               },
-              priority: case sql_task.priority |> option.unwrap("medium") |> shared_types.task_priority_from_string {
+              priority: case
+                sql_task.priority
+                |> option.unwrap("medium")
+                |> shared_types.task_priority_from_string
+              {
                 Ok(priority) -> priority
                 Error(_) -> shared_types.TaskMedium
               },
@@ -281,7 +316,7 @@ fn handle_add_task_json(
             )
           let task_json = task_to_json(task)
           wisp.json_response(
-            string_tree.from_string(json.to_string(task_json)),
+            json.to_string(task_json),
             201,
           )
           |> wisp.set_header("access-control-allow-origin", "*")
@@ -297,7 +332,7 @@ fn handle_add_task_json(
               #("error", json.string("Unexpected database result format")),
             ])
           wisp.json_response(
-            string_tree.from_string(json.to_string(error_json)),
+            json.to_string(error_json),
             500,
           )
           |> wisp.set_header("access-control-allow-origin", "*")
@@ -307,7 +342,7 @@ fn handle_add_task_json(
           )
           |> wisp.set_header("access-control-allow-headers", "Content-Type")
         }
-        Error(err) -> {
+        Error(_) -> {
           let error_json =
             json.object([
               #(
@@ -318,7 +353,7 @@ fn handle_add_task_json(
               ),
             ])
           wisp.json_response(
-            string_tree.from_string(json.to_string(error_json)),
+            json.to_string(error_json),
             400,
           )
           |> wisp.set_header("access-control-allow-origin", "*")
@@ -337,14 +372,13 @@ fn handle_add_task_json(
           #("error", json.string("Invalid request format: " <> error_msg)),
         ])
       wisp.json_response(
-        string_tree.from_string(json.to_string(error_json)),
+        json.to_string(error_json),
         400,
       )
       |> wisp.set_header("access-control-allow-origin", "*")
     }
   }
 }
-
 
 pub fn update_task_json(
   conn: db.DatabaseConnection,
@@ -360,7 +394,6 @@ fn handle_update_task_json(
   json_body: dynamic.Dynamic,
   task_id: Int,
 ) -> Response {
-
   case api_decoders.decode_update_task_request(json_body) {
     Ok(task_request) -> {
       let due_date = case task_request.due_date {
@@ -380,8 +413,10 @@ fn handle_update_task_json(
           task_request.title,
           task_request.description,
           task_request.assigned_to,
-          shared_types.task_status_to_string(task_request.status),   // Convert enum to string for DB
-          shared_types.task_priority_to_string(task_request.priority), // Convert enum to string for DB
+          shared_types.task_status_to_string(task_request.status),
+          // Convert enum to string for DB
+          shared_types.task_priority_to_string(task_request.priority),
+          // Convert enum to string for DB
           due_date,
           task_request.hours_logged,
         )
@@ -394,11 +429,19 @@ fn handle_update_task_json(
               title: sql_task.title,
               description: sql_task.description |> option.unwrap(""),
               assigned_to: sql_task.assigned_to,
-              status: case sql_task.status |> option.unwrap("pending") |> shared_types.task_status_from_string {
+              status: case
+                sql_task.status
+                |> option.unwrap("pending")
+                |> shared_types.task_status_from_string
+              {
                 Ok(status) -> status
                 Error(_) -> shared_types.TaskPending
               },
-              priority: case sql_task.priority |> option.unwrap("medium") |> shared_types.task_priority_from_string {
+              priority: case
+                sql_task.priority
+                |> option.unwrap("medium")
+                |> shared_types.task_priority_from_string
+              {
                 Ok(priority) -> priority
                 Error(_) -> shared_types.TaskMedium
               },
@@ -407,7 +450,7 @@ fn handle_update_task_json(
             )
           let task_json = task_to_json(task)
           wisp.json_response(
-            string_tree.from_string(json.to_string(task_json)),
+            json.to_string(task_json),
             200,
           )
           |> wisp.set_header("access-control-allow-origin", "*")
@@ -423,7 +466,7 @@ fn handle_update_task_json(
               #("error", json.string("Unexpected database result format")),
             ])
           wisp.json_response(
-            string_tree.from_string(json.to_string(error_json)),
+            json.to_string(error_json),
             500,
           )
           |> wisp.set_header("access-control-allow-origin", "*")
@@ -433,13 +476,13 @@ fn handle_update_task_json(
           )
           |> wisp.set_header("access-control-allow-headers", "Content-Type")
         }
-        Error(err) -> {
+        Error(_) -> {
           let error_json =
             json.object([
               #("error", json.string("Update failed")),
             ])
           wisp.json_response(
-            string_tree.from_string(json.to_string(error_json)),
+            json.to_string(error_json),
             400,
           )
           |> wisp.set_header("access-control-allow-origin", "*")
@@ -458,7 +501,7 @@ fn handle_update_task_json(
           #("error", json.string("Invalid request format: " <> error_msg)),
         ])
       wisp.json_response(
-        string_tree.from_string(json.to_string(error_json)),
+        json.to_string(error_json),
         400,
       )
       |> wisp.set_header("access-control-allow-origin", "*")
@@ -484,8 +527,10 @@ pub fn update_project_json(
               project_request.name,
               project_request.description,
               deadline_date,
-              shared_types.project_status_to_string(project_request.status), // Convert enum to string for DB
-              shared_types.project_color_to_string(project_request.color),   // Convert enum to string for DB
+              shared_types.project_status_to_string(project_request.status),
+              // Convert enum to string for DB
+              shared_types.project_color_to_string(project_request.color),
+              // Convert enum to string for DB
             )
           {
             Ok([sql_project]) -> {
@@ -495,11 +540,22 @@ pub fn update_project_json(
                   name: sql_project.name,
                   description: sql_project.description |> option.unwrap(""),
                   deadline: sql_project.deadline,
-                  status: case sql_project.status |> option.unwrap(shared_types.project_status_to_string(project_request.status)) |> shared_types.project_status_from_string {
+                  status: case
+                    sql_project.status
+                    |> option.unwrap(shared_types.project_status_to_string(
+                      project_request.status,
+                    ))
+                    |> shared_types.project_status_from_string
+                  {
                     Ok(status) -> status
-                    Error(_) -> project_request.status  // Use the validated request status as fallback
+                    Error(_) -> project_request.status
+                    // Use the validated request status as fallback
                   },
-                  color: case sql_project.color |> option.unwrap("blue") |> shared_types.project_color_from_string {
+                  color: case
+                    sql_project.color
+                    |> option.unwrap("blue")
+                    |> shared_types.project_color_from_string
+                  {
                     Ok(color) -> color
                     Error(_) -> shared_types.ProjectBlue
                   },
@@ -507,7 +563,7 @@ pub fn update_project_json(
                 )
               let project_json = project_to_json(project)
               wisp.json_response(
-                string_tree.from_string(json.to_string(project_json)),
+                json.to_string(project_json),
                 200,
               )
               |> wisp.set_header("access-control-allow-origin", "*")
@@ -520,15 +576,15 @@ pub fn update_project_json(
             Ok(_) ->
               wisp.internal_server_error()
               |> wisp.set_header("access-control-allow-origin", "*")
-        Error(_err) -> {
+            Error(_) -> {
               let error_json =
                 json.object([
                   #("error", json.string("Update failed")),
                 ])
-              wisp.json_response(
-                string_tree.from_string(json.to_string(error_json)),
-                400,
-              )
+          wisp.json_response(
+            json.to_string(error_json),
+            400,
+          )
               |> wisp.set_header("access-control-allow-origin", "*")
             }
           }
@@ -536,10 +592,13 @@ pub fn update_project_json(
         Error(_) -> {
           let error_json =
             json.object([
-              #("error", json.string("Invalid date format: " <> project_request.deadline)),
+              #(
+                "error",
+                json.string("Invalid date format: " <> project_request.deadline),
+              ),
             ])
           wisp.json_response(
-            string_tree.from_string(json.to_string(error_json)),
+            json.to_string(error_json),
             400,
           )
           |> wisp.set_header("access-control-allow-origin", "*")
@@ -553,17 +612,13 @@ pub fn update_project_json(
           #("error", json.string("Invalid request format: " <> error_msg)),
         ])
       wisp.json_response(
-        string_tree.from_string(json.to_string(error_json)),
+        json.to_string(error_json),
         400,
       )
       |> wisp.set_header("access-control-allow-origin", "*")
     }
   }
 }
-
-
-
-
 
 pub fn get_projects_json(conn: db.DatabaseConnection) -> Response {
   case db.get_projects(conn) {
@@ -572,7 +627,7 @@ pub fn get_projects_json(conn: db.DatabaseConnection) -> Response {
       let projects_array = json.array(from: projects, of: project_to_json)
 
       wisp.json_response(
-        string_tree.from_string(json.to_string(projects_array)),
+        json.to_string(projects_array),
         200,
       )
       |> wisp.set_header("access-control-allow-origin", "*")
@@ -606,7 +661,7 @@ pub fn get_tasks_json(conn: db.DatabaseConnection, req: Request) -> Response {
       let tasks_array = json.array(from: tasks, of: task_to_json)
 
       wisp.json_response(
-        string_tree.from_string(json.to_string(tasks_array)),
+        json.to_string(tasks_array),
         200,
       )
       |> wisp.set_header("access-control-allow-origin", "*")
@@ -616,13 +671,13 @@ pub fn get_tasks_json(conn: db.DatabaseConnection, req: Request) -> Response {
       )
       |> wisp.set_header("access-control-allow-headers", "Content-Type")
     }
-    Error(_err) -> {
+    Error(_) -> {
       // Debug: Let's see what error we're getting
       let error_json = json.object([#("error", json.string("Database error"))])
-      wisp.json_response(
-        string_tree.from_string(json.to_string(error_json)),
-        500,
-      )
+          wisp.json_response(
+            json.to_string(error_json),
+            500,
+          )
       |> wisp.set_header("access-control-allow-origin", "*")
     }
   }
@@ -635,7 +690,7 @@ pub fn get_team_json(conn: db.DatabaseConnection) -> Response {
       let members_array = json.array(from: members, of: team_member_to_json)
 
       wisp.json_response(
-        string_tree.from_string(json.to_string(members_array)),
+        json.to_string(members_array),
         200,
       )
       |> wisp.set_header("access-control-allow-origin", "*")
@@ -661,7 +716,10 @@ fn project_to_json(project: Project) -> json.Json {
       Some(date) -> json.string(date_to_string(date))
       None -> json.string("")
     }),
-    #("status", json.string(shared_types.project_status_to_string(project.status))),
+    #(
+      "status",
+      json.string(shared_types.project_status_to_string(project.status)),
+    ),
     #("color", json.string(shared_types.project_color_to_string(project.color))),
     #("created_at", json.string(project.created_at)),
   ])
@@ -678,7 +736,10 @@ fn task_to_json(task: Task) -> json.Json {
       None -> json.null()
     }),
     #("status", json.string(shared_types.task_status_to_string(task.status))),
-    #("priority", json.string(shared_types.task_priority_to_string(task.priority))),
+    #(
+      "priority",
+      json.string(shared_types.task_priority_to_string(task.priority)),
+    ),
     #("due_date", case task.due_date {
       Some(date) -> json.string(date_to_string(date))
       None -> json.null()
@@ -696,7 +757,6 @@ fn team_member_to_json(member: TeamMember) -> json.Json {
   ])
 }
 
-
 pub fn add_project_json(conn: db.DatabaseConnection, req: Request) -> Response {
   use json_body <- wisp.require_json(req)
 
@@ -707,8 +767,10 @@ pub fn add_project_json(conn: db.DatabaseConnection, req: Request) -> Response {
         project_request.name,
         project_request.description,
         project_request.deadline,
-        project_request.status,  // Now passing enum directly!
-        project_request.color,   // Now passing enum directly!
+        project_request.status,
+        // Now passing enum directly!
+        project_request.color,
+        // Now passing enum directly!
       )
     }
     Error(decode_errors) -> {
@@ -718,7 +780,7 @@ pub fn add_project_json(conn: db.DatabaseConnection, req: Request) -> Response {
           #("error", json.string("Invalid request format: " <> error_msg)),
         ])
       wisp.json_response(
-        string_tree.from_string(json.to_string(error_json)),
+        json.to_string(error_json),
         400,
       )
       |> wisp.set_header("access-control-allow-origin", "*")
@@ -731,19 +793,23 @@ fn project_creation_logic(
   name: String,
   description: String,
   deadline_str: String,
-  status: shared_types.ProjectStatus,  // Now takes enum directly!
-  color: shared_types.ProjectColor,    // Now takes enum directly!
+  status: shared_types.ProjectStatus,
+  // Now takes enum directly!
+  color: shared_types.ProjectColor,
+  // Now takes enum directly!
 ) -> Response {
   case parse_date(deadline_str) {
     Ok(deadline_date) -> {
       case
         db.add_project(
-          conn, 
-          name, 
-          description, 
-          deadline_date, 
-          shared_types.project_status_to_string(status),  // Convert enum to string for DB
-          shared_types.project_color_to_string(color)     // Convert enum to string for DB
+          conn,
+          name,
+          description,
+          deadline_date,
+          shared_types.project_status_to_string(status),
+          // Convert enum to string for DB
+          shared_types.project_color_to_string(color),
+          // Convert enum to string for DB
         )
       {
         Ok([sql_project]) -> {
@@ -753,11 +819,19 @@ fn project_creation_logic(
               name: sql_project.name,
               description: sql_project.description |> option.unwrap(""),
               deadline: sql_project.deadline,
-              status: case sql_project.status |> option.unwrap("planning") |> shared_types.project_status_from_string {
+              status: case
+                sql_project.status
+                |> option.unwrap("planning")
+                |> shared_types.project_status_from_string
+              {
                 Ok(status) -> status
                 Error(_) -> shared_types.ProjectPlanning
               },
-              color: case sql_project.color |> option.unwrap("blue") |> shared_types.project_color_from_string {
+              color: case
+                sql_project.color
+                |> option.unwrap("blue")
+                |> shared_types.project_color_from_string
+              {
                 Ok(color) -> color
                 Error(_) -> shared_types.ProjectBlue
               },
@@ -765,7 +839,7 @@ fn project_creation_logic(
             )
           let project_json = project_to_json(project)
           wisp.json_response(
-            string_tree.from_string(json.to_string(project_json)),
+            json.to_string(project_json),
             201,
           )
           |> wisp.set_header("access-control-allow-origin", "*")
@@ -789,7 +863,7 @@ fn project_creation_logic(
           #("error", json.string("Invalid date format: " <> deadline_str)),
         ])
       wisp.json_response(
-        string_tree.from_string(json.to_string(error_json)),
+        json.to_string(error_json),
         400,
       )
       |> wisp.set_header("access-control-allow-origin", "*")
