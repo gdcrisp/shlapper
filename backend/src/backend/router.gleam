@@ -39,7 +39,7 @@ pub fn handle_request(req: Request, conn: db.DatabaseConnection) -> Response {
             Post -> {
               case int.parse(project_id_str) {
                 Ok(project_id) -> api.update_project_json(conn, req, project_id)
-                Error(_) -> wisp.bad_request()
+                Error(_) -> wisp.json_response("{\"error\": \"Invalid project ID\"}", 400)
               }
             }
             _ -> wisp.method_not_allowed([Post])
@@ -56,7 +56,7 @@ pub fn handle_request(req: Request, conn: db.DatabaseConnection) -> Response {
             Post -> {
               case int.parse(task_id_str) {
                 Ok(task_id) -> api.update_task_json(conn, req, task_id)
-                Error(_) -> wisp.bad_request()
+                Error(_) -> wisp.json_response("{\"error\": \"Invalid task ID\"}", 400)
               }
             }
             _ -> wisp.method_not_allowed([Post])

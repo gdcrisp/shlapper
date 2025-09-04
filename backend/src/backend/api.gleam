@@ -6,9 +6,8 @@ import gleam/dynamic
 import gleam/int
 import gleam/json
 import gleam/list
-import gleam/option.{type Option, None, Some}
+import gleam/option.{None, Some}
 import gleam/string
-import gleam/string_tree
 import gleam/time/calendar.{type Date}
 import wisp.{type Request, type Response}
 
@@ -211,7 +210,7 @@ pub fn get_dashboard_json(conn: db.DatabaseConnection) -> Response {
             ])
 
           wisp.json_response(
-            string_tree.from_string(json.to_string(stats_json)),
+            json.to_string(stats_json),
             200,
           )
           |> wisp.set_header("access-control-allow-origin", "*")
@@ -235,7 +234,7 @@ pub fn get_dashboard_json(conn: db.DatabaseConnection) -> Response {
               #("recent_tasks", json.array(from: [], of: task_to_json)),
             ])
           wisp.json_response(
-            string_tree.from_string(json.to_string(empty_stats)),
+            json.to_string(empty_stats),
             200,
           )
           |> wisp.set_header("access-control-allow-origin", "*")
@@ -317,7 +316,7 @@ fn handle_add_task_json(
             )
           let task_json = task_to_json(task)
           wisp.json_response(
-            string_tree.from_string(json.to_string(task_json)),
+            json.to_string(task_json),
             201,
           )
           |> wisp.set_header("access-control-allow-origin", "*")
@@ -333,7 +332,7 @@ fn handle_add_task_json(
               #("error", json.string("Unexpected database result format")),
             ])
           wisp.json_response(
-            string_tree.from_string(json.to_string(error_json)),
+            json.to_string(error_json),
             500,
           )
           |> wisp.set_header("access-control-allow-origin", "*")
@@ -354,7 +353,7 @@ fn handle_add_task_json(
               ),
             ])
           wisp.json_response(
-            string_tree.from_string(json.to_string(error_json)),
+            json.to_string(error_json),
             400,
           )
           |> wisp.set_header("access-control-allow-origin", "*")
@@ -373,7 +372,7 @@ fn handle_add_task_json(
           #("error", json.string("Invalid request format: " <> error_msg)),
         ])
       wisp.json_response(
-        string_tree.from_string(json.to_string(error_json)),
+        json.to_string(error_json),
         400,
       )
       |> wisp.set_header("access-control-allow-origin", "*")
@@ -451,7 +450,7 @@ fn handle_update_task_json(
             )
           let task_json = task_to_json(task)
           wisp.json_response(
-            string_tree.from_string(json.to_string(task_json)),
+            json.to_string(task_json),
             200,
           )
           |> wisp.set_header("access-control-allow-origin", "*")
@@ -467,7 +466,7 @@ fn handle_update_task_json(
               #("error", json.string("Unexpected database result format")),
             ])
           wisp.json_response(
-            string_tree.from_string(json.to_string(error_json)),
+            json.to_string(error_json),
             500,
           )
           |> wisp.set_header("access-control-allow-origin", "*")
@@ -483,7 +482,7 @@ fn handle_update_task_json(
               #("error", json.string("Update failed")),
             ])
           wisp.json_response(
-            string_tree.from_string(json.to_string(error_json)),
+            json.to_string(error_json),
             400,
           )
           |> wisp.set_header("access-control-allow-origin", "*")
@@ -502,7 +501,7 @@ fn handle_update_task_json(
           #("error", json.string("Invalid request format: " <> error_msg)),
         ])
       wisp.json_response(
-        string_tree.from_string(json.to_string(error_json)),
+        json.to_string(error_json),
         400,
       )
       |> wisp.set_header("access-control-allow-origin", "*")
@@ -564,7 +563,7 @@ pub fn update_project_json(
                 )
               let project_json = project_to_json(project)
               wisp.json_response(
-                string_tree.from_string(json.to_string(project_json)),
+                json.to_string(project_json),
                 200,
               )
               |> wisp.set_header("access-control-allow-origin", "*")
@@ -582,10 +581,10 @@ pub fn update_project_json(
                 json.object([
                   #("error", json.string("Update failed")),
                 ])
-              wisp.json_response(
-                string_tree.from_string(json.to_string(error_json)),
-                400,
-              )
+          wisp.json_response(
+            json.to_string(error_json),
+            400,
+          )
               |> wisp.set_header("access-control-allow-origin", "*")
             }
           }
@@ -599,7 +598,7 @@ pub fn update_project_json(
               ),
             ])
           wisp.json_response(
-            string_tree.from_string(json.to_string(error_json)),
+            json.to_string(error_json),
             400,
           )
           |> wisp.set_header("access-control-allow-origin", "*")
@@ -613,7 +612,7 @@ pub fn update_project_json(
           #("error", json.string("Invalid request format: " <> error_msg)),
         ])
       wisp.json_response(
-        string_tree.from_string(json.to_string(error_json)),
+        json.to_string(error_json),
         400,
       )
       |> wisp.set_header("access-control-allow-origin", "*")
@@ -628,7 +627,7 @@ pub fn get_projects_json(conn: db.DatabaseConnection) -> Response {
       let projects_array = json.array(from: projects, of: project_to_json)
 
       wisp.json_response(
-        string_tree.from_string(json.to_string(projects_array)),
+        json.to_string(projects_array),
         200,
       )
       |> wisp.set_header("access-control-allow-origin", "*")
@@ -662,7 +661,7 @@ pub fn get_tasks_json(conn: db.DatabaseConnection, req: Request) -> Response {
       let tasks_array = json.array(from: tasks, of: task_to_json)
 
       wisp.json_response(
-        string_tree.from_string(json.to_string(tasks_array)),
+        json.to_string(tasks_array),
         200,
       )
       |> wisp.set_header("access-control-allow-origin", "*")
@@ -675,10 +674,10 @@ pub fn get_tasks_json(conn: db.DatabaseConnection, req: Request) -> Response {
     Error(_) -> {
       // Debug: Let's see what error we're getting
       let error_json = json.object([#("error", json.string("Database error"))])
-      wisp.json_response(
-        string_tree.from_string(json.to_string(error_json)),
-        500,
-      )
+          wisp.json_response(
+            json.to_string(error_json),
+            500,
+          )
       |> wisp.set_header("access-control-allow-origin", "*")
     }
   }
@@ -691,7 +690,7 @@ pub fn get_team_json(conn: db.DatabaseConnection) -> Response {
       let members_array = json.array(from: members, of: team_member_to_json)
 
       wisp.json_response(
-        string_tree.from_string(json.to_string(members_array)),
+        json.to_string(members_array),
         200,
       )
       |> wisp.set_header("access-control-allow-origin", "*")
@@ -781,7 +780,7 @@ pub fn add_project_json(conn: db.DatabaseConnection, req: Request) -> Response {
           #("error", json.string("Invalid request format: " <> error_msg)),
         ])
       wisp.json_response(
-        string_tree.from_string(json.to_string(error_json)),
+        json.to_string(error_json),
         400,
       )
       |> wisp.set_header("access-control-allow-origin", "*")
@@ -840,7 +839,7 @@ fn project_creation_logic(
             )
           let project_json = project_to_json(project)
           wisp.json_response(
-            string_tree.from_string(json.to_string(project_json)),
+            json.to_string(project_json),
             201,
           )
           |> wisp.set_header("access-control-allow-origin", "*")
@@ -864,7 +863,7 @@ fn project_creation_logic(
           #("error", json.string("Invalid date format: " <> deadline_str)),
         ])
       wisp.json_response(
-        string_tree.from_string(json.to_string(error_json)),
+        json.to_string(error_json),
         400,
       )
       |> wisp.set_header("access-control-allow-origin", "*")

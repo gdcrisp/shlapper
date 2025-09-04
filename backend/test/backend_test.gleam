@@ -111,5 +111,3 @@ pub fn add_task_db_test() {
     Error(_) -> panic as "Failed to connect to database"
   }
 }
-
-
